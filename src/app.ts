@@ -14,7 +14,7 @@ const app = express();
 app.use(morgan('combined'));
 app.use(cors());
 // app.use(hpp());
-// app.use(helmet());
+// app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
 // app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

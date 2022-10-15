@@ -19,7 +19,12 @@ router.post('/api/v2/canister/:id([^/]+)/:method', cbor(), (req, res, next) => {
 
         console.log(id, message); ////
 
-        res.status(200).send();
+        // Temporary
+        if (id === 'ryjl3-tyaaa-aaaaa-aaaba-cai') {
+            return next();
+        }
+
+        res.status(500).send();
     } catch (err) {
         console.error(err); ///////
         next(err);
