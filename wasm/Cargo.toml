@@ -15,7 +15,7 @@ console_error_panic_hook = { version = "0.1.6", optional = true }
 serde = { version = "1.0.143", features = ["derive"] }
 serde_json = "1.0.83"
 wasm-bindgen = { version = "0.2.82", features = ["serde-serialize"] }
-motoko = { repository = "https://github.com/dfinity/motoko.rs", branch = "main" }
+motoko = { git = "https://github.com/dfinity/motoko.rs", branch = "main" }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.13"
