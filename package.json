@@ -9,8 +9,9 @@
     "bin": "bin/motoko-dev-server.js",
     "scripts": {
         "start": "ts-node src",
-        "build:typescript": "rimraf ./lib && tsc -p .",
+        "build:ts": "rimraf ./lib && tsc -p .",
         "build:wasm": "wasm-pack build wasm --target nodejs --out-dir pkg/nodejs",
+        "build": "run-s build:ts build:wasm",
         "prepare": "husky install",
         "generate": "node utils/generate",
         "test": "jest",
