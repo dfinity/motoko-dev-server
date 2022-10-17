@@ -1,7 +1,8 @@
 import express from 'express';
+import proxy from '../proxy';
 import cbor from '../utils/cborBodyParser';
 
-const router = express.Router();
+// const router = express.Router();
 
 interface Message {
     arg: Buffer;
@@ -12,23 +13,42 @@ interface Message {
     sender: Buffer;
 }
 
-router.post('/api/v2/canister/:id([^/]+)/:method', cbor(), (req, res, next) => {
-    try {
-        const { id, method } = req.params;
-        const message: Message = req.body.value.content;
+export default (app: express.Application) => {
+    app.post(
+        '/api/v2/canister/:id([^/]+)/:method',
+        (req, res, next) => {
+            try {
+                const { id, method } = req.params;
 
-        console.log(id, message); ////
+                if (
+                    id === 'rkp4c-7iaaa-aaaaa-aaaca-cai' ||
+                    method === 'read_state'
+                ) {
+                    console.log('Skipping:', id);
 
-        // Temporary
-        if (id === 'ryjl3-tyaaa-aaaaa-aaaba-cai') {
-            return next();
-        }
+                    return next('route');
+                }
 
-        res.status(500).send();
-    } catch (err) {
-        console.error(err); ///////
-        next(err);
-    }
-});
+                next();
+            } catch (err) {
+                next(err);
+            }
+        },
+        cbor(),
+        (req, res, next) => {
+            try {
+                const { id, method } = req.params;
+                const message: Message = req.body.value.content;
 
-export default router;
+                console.log(id, message);
+
+                // res.status(500).send('Unimplemented');
+                res.status(500).end();
+            } catch (err) {
+                next(err);
+            }
+        },
+    );
+};
+
+// export default router;
