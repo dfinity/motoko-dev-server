@@ -1,10 +1,10 @@
 // Derived from: https://github.com/comino/cbor-body-parser/blob/master/index.js
 
-let read = require('body-parser/lib/read');
-let cborEncoder = require('cbor');
-var bytes = require('bytes');
-var debug = require('debug')('cbor-parser');
-var typeis = require('type-is');
+const read = require('body-parser/lib/read');
+const { decode: cborDecode } = require('cbor');
+const bytes = require('bytes');
+const debug = require('debug')('cbor-parser');
+const typeis = require('type-is');
 
 interface CborOptions {
     limit: number | string;
@@ -35,7 +35,7 @@ export default function cbor(
             return {};
         }
         debug('parsing cbor content');
-        return cborEncoder.decode(buf);
+        return cborDecode(buf);
     }
 
     return function cborParser(req, res, next) {

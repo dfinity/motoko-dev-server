@@ -1,7 +1,3 @@
-let wasm: any = {};
-
-export const setWasm = (newWasm: object) => {
-    Object.assign(wasm, newWasm);
-};
+import wasm from "../wasm/pkg/nodejs/wasm";
 
 export default wasm;

@@ -1,3 +1,4 @@
+use candid::CandidType;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -9,6 +10,7 @@ struct Message {
     canister_id: Vec<u8>,
     ingress_expiry: String,
     method_name: String,
+    nonce: Vec<u8>,
     request_type: String,
     sender: Vec<u8>,
 }
@@ -30,10 +32,12 @@ pub fn start() {
 }
 
 #[wasm_bindgen]
-pub fn handle_message(message: JsValue) -> Result {
+pub fn handle_message(_id: String, _method: String, message: JsValue) -> Result {
     let message: Message = message.into_serde()?;
 
-    println!("Candid: {:?}", message.arg);
+    let args = candid::decode_args(&message.arg)?;
 
-    js_return(&message)
+    println!("Candid args: {:?}", args);
+
+    js_return(&candid::encode_one("abc")?)
 }

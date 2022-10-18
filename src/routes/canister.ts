@@ -1,16 +1,65 @@
 import express from 'express';
 import proxy from '../proxy';
 import cbor from '../utils/cborBodyParser';
+import wasm from '../wasm';
+import { encode as cborEncode } from 'cbor';
 
 // const router = express.Router();
 
-interface Message {
+interface CborMessage {
     arg: Buffer;
     canister_id: Buffer;
-    ingress_expiry: number;
+    ingress_expiry: BigInt;
     method_name: string;
+    nonce: Buffer;
     request_type: string;
     sender: Buffer;
+}
+
+interface Message {
+    arg: number[];
+    canister_id: number[];
+    ingress_expiry: string;
+    method_name: string;
+    nonce: number[];
+    request_type: string;
+    sender: number[];
+}
+
+function fromCborMessage(cborMessage: CborMessage): Message {
+    // console.log(cborMessage); ///
+    return {
+        arg: toByteArray(cborMessage.arg),
+        canister_id: toByteArray(cborMessage.canister_id),
+        ingress_expiry: cborMessage.ingress_expiry.toString(),
+        method_name: cborMessage.method_name,
+        nonce: toByteArray(cborMessage.nonce),
+        request_type: cborMessage.request_type,
+        sender: toByteArray(cborMessage.sender),
+    };
+}
+
+function toCborMessage(jsonmessage: Message): CborMessage {
+    return {
+        arg: toBuffer(jsonmessage.arg),
+        canister_id: toBuffer(jsonmessage.canister_id),
+        ingress_expiry: BigInt(jsonmessage.ingress_expiry),
+        method_name: jsonmessage.method_name,
+        nonce: toBuffer(jsonmessage.nonce),
+        request_type: jsonmessage.request_type,
+        sender: toBuffer(jsonmessage.sender),
+    };
+}
+
+function toByteArray(buffer: Buffer): number[] {
+    return [...buffer];
+}
+function toBuffer(array: number[]): Buffer {
+    const buf = Buffer.alloc(array.length);
+    for (let i = 0; i < buf.length; i++) {
+        buf[i] = array[i];
+    }
+    return buf;
 }
 
 export default (app: express.Application) => {
@@ -38,12 +87,17 @@ export default (app: express.Application) => {
         (req, res, next) => {
             try {
                 const { id, method } = req.params;
-                const message: Message = req.body.value.content;
+                const message = fromCborMessage(req.body.value.content);
 
                 console.log(id, message);
 
+                const result = wasm.handle_message(id, method, message);
+
+                console.log(result); ///
+
                 // res.status(500).send('Unimplemented');
-                res.status(500).end();
+                res.status(200).end();
+                // res.status(200).send(cborEncode({}));
             } catch (err) {
                 next(err);
             }
