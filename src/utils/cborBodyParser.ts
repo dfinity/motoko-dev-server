@@ -4,8 +4,9 @@
 import read from 'body-parser/lib/read';
 import { decode as cborDecode } from 'cbor';
 import bytes from 'bytes';
-const debug = require('debug')('cbor-parser');
 import typeis from 'type-is';
+
+const debug = require('debug')('cbor-parser');
 
 interface CborOptions {
     limit: number | string;
