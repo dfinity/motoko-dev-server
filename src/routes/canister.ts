@@ -1,10 +1,10 @@
 import express from 'express';
-import proxy from '../proxy';
 import cbor from '../utils/cborBodyParser';
 import wasm from '../wasm';
-import { encode as cborEncode } from 'cbor';
 
 // const router = express.Router();
+
+const uiCanister = 'ryjl3-tyaaa-aaaaa-aaaba-cai'; // TODO: detect from `canister_ids.json`
 
 interface CborMessage {
     arg: Buffer;
@@ -70,10 +70,7 @@ export default (app: express.Application) => {
             try {
                 const { id, method } = req.params;
 
-                if (
-                    id === 'rkp4c-7iaaa-aaaaa-aaaca-cai' ||
-                    method === 'read_state'
-                ) {
+                if (id === uiCanister || method === 'read_state') {
                     console.log('Skipping:', id);
 
                     return next('route');
@@ -94,7 +91,7 @@ export default (app: express.Application) => {
 
                 const result = wasm.handle_message(id, method, message);
 
-                console.log(result); ///
+                console.log('RESULT:', result); ///
 
                 // res.status(500).send('Unimplemented');
                 res.status(200).end();
