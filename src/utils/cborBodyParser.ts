@@ -6,6 +6,15 @@ const bytes = require('bytes');
 const debug = require('debug')('cbor-parser');
 const typeis = require('type-is');
 
+console.log(
+    cborDecode(
+        Buffer.from(
+            'ÙÙ÷¡gcontent¤ningress_expiry\u001b\u0017\u001f\u0000~òtè\u0000epathsNrequest_statusX bÜ8\u0002\u0018L,\u0014`>·\u001a?J¨\u0019\u0018Ìë£Á\u0000`\u000b\u0016ÜÐlrequest_typejread_statefsenderA\u0004',
+            'ascii',
+        ),
+    ).value.content,
+);
+
 interface CborOptions {
     limit: number | string;
     type: string;

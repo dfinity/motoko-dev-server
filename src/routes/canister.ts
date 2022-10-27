@@ -52,8 +52,9 @@ function toCborMessage(jsonmessage: Message): CborMessage {
 }
 
 function toByteArray(buffer: Buffer): number[] {
-    return [...buffer];
+    return [...new Uint8Array(buffer)];
 }
+
 function toBuffer(array: number[]): Buffer {
     const buf = Buffer.alloc(array.length);
     for (let i = 0; i < buf.length; i++) {
