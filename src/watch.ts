@@ -27,20 +27,18 @@ export function watch(directory: string) {
         wasm.remove_canister(canister.alias);
     };
 
-    chokidar
-        .watch(resolve(directory, 'dfx.json'))
-        .on('change', (event, path) => {
-            const previousCanisters = canisters;
-            updateDfxConfig();
-            previousCanisters?.forEach((canister) => {
-                if (!canisters.some((c) => c.alias === canister.alias)) {
-                    removeCanister(canister);
-                }
-            });
-            canisters?.forEach((canister) => {
-                updateCanister(canister);
-            });
+    chokidar.watch(resolve(directory, 'dfx.json')).on('change', () => {
+        const previousCanisters = canisters;
+        updateDfxConfig();
+        previousCanisters?.forEach((canister) => {
+            if (!canisters.some((c) => c.alias === canister.alias)) {
+                removeCanister(canister);
+            }
         });
+        canisters?.forEach((canister) => {
+            updateCanister(canister);
+        });
+    });
 
     chokidar
         .watch(resolve(directory, '**/*.mo'))
