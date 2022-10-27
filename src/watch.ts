@@ -10,8 +10,15 @@ export function watch(directory: string) {
     let canisters: Canister[] | undefined;
 
     const updateDfxConfig = () => {
-        const dfxConfig = loadDfxConfig(directory);
-        canisters = getDfxCanisters(directory, dfxConfig);
+        try {
+            const dfxConfig = loadDfxConfig(directory);
+            canisters = getDfxCanisters(directory, dfxConfig);
+        } catch (err) {
+            console.error(
+                'Could not find a `dfx.json` file in directory:',
+                directory,
+            );
+        }
     };
     updateDfxConfig();
 
@@ -35,7 +42,7 @@ export function watch(directory: string) {
         const previousCanisters = canisters;
         updateDfxConfig();
         previousCanisters?.forEach((canister) => {
-            if (!canisters.some((c) => c.alias === canister.alias)) {
+            if (!canisters?.some((c) => c.alias === canister.alias)) {
                 removeCanister(canister);
             }
         });
@@ -48,8 +55,7 @@ export function watch(directory: string) {
         if (!path.endsWith('.mo')) {
             return;
         }
-        console.log(event, path);
-        canisters.forEach((canister) => {
+        canisters?.forEach((canister) => {
             if (resolve(directory, path) === canister.file) {
                 if (path === 'unlink') {
                     removeCanister(canister);

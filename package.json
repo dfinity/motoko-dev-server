@@ -1,12 +1,12 @@
 {
-    "name": "motoko-dev-server",
+    "name": "mo-dev",
     "version": "0.0.1",
     "description": "A rapid prototyping server for developing Motoko smart contracts.",
     "author": "Ryan Vandersmith (https://github.com/rvanasa)",
     "license": "Apache-2.0",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
-    "bin": "bin/motoko-dev-server.js",
+    "bin": "bin/mo-dev.js",
     "scripts": {
         "start": "ts-node src/command",
         "build:ts": "rimraf ./lib && tsc -p .",

@@ -6,7 +6,7 @@ import { watch } from './watch';
 
 const {} = program.argument('[directory]', 'dfx directory').parse().opts();
 
-const directory = resolve(process.cwd(), program.args[0]);
+const directory = resolve(process.cwd(), program.args[0] || '.');
 
 const devServerPort = +process.env.PORT || 8000;
 const replicaPort = +process.env.DFX_PORT || 8001;
