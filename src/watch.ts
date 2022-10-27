@@ -16,18 +16,30 @@ export function watch(directory: string) {
     updateDfxConfig();
 
     const updateCanister = (canister: Canister) => {
+        console.log('Updated canister:', canister.alias);
         wasm.update_canister(
             canister.alias,
             readFileSync(canister.file, 'utf8'),
         );
     };
+    const removeCanister = (canister: Canister) => {
+        console.log('Removed canister:', canister.alias);
+        wasm.remove_canister(canister.alias);
+    };
 
     chokidar
         .watch(resolve(directory, 'dfx.json'))
         .on('change', (event, path) => {
+            const previousCanisters = canisters;
             updateDfxConfig();
-
-            canisters?.forEach((canister) => {});
+            previousCanisters?.forEach((canister) => {
+                if (!canisters.some((c) => c.alias === canister.alias)) {
+                    removeCanister(canister);
+                }
+            });
+            canisters?.forEach((canister) => {
+                updateCanister(canister);
+            });
         });
 
     chokidar
@@ -38,7 +50,7 @@ export function watch(directory: string) {
                 canisters.forEach((canister) => {
                     if (resolve(directory, path) === resolve(canister.file)) {
                         if (path === 'unlink') {
-                            wasm.remove_canister(canister.alias);
+                            removeCanister(canister);
                         } else {
                             updateCanister(canister);
                         }

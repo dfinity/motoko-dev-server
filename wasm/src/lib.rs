@@ -57,18 +57,18 @@ pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Resu
 
 /// Create or update a canister. Returns `true` if a canister was successfully updated.
 #[wasm_bindgen]
-pub fn update_canister(_alias: String, source: String) -> Result<bool> {
+pub fn update_canister(_alias: String, source: String) -> Result {
     CORE.with(|core| {
         // TODO: multiple canisters, error handling
-        let result = core.get_mut().eval(&source);
+        let result = core.borrow_mut().eval(&source);
         js_return(&result.is_ok())
     })
 }
 
 /// Remove a canister if it exists. Returns `true` if a canister was successfully removed.
 #[wasm_bindgen]
-pub fn remove_canister(_alias: String, source: String) -> Result {
-    CORE.with(|core| {
+pub fn remove_canister(_alias: String) -> Result {
+    CORE.with(|_core| {
         // TODO
         js_return(&true)
     })
