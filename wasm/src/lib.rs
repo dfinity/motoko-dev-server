@@ -30,11 +30,16 @@ struct LiveCanister {
 
 #[wasm_bindgen]
 extern "C" {
-    // fn alert(s: &str);
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn js_log(s: &str);
 }
 
 fn js_return<T: Serialize>(value: &T) -> Result {
     to_value(value).map_err(|e| JsError::new(&format!("Serialization error ({:?})", e)))
+}
+
+macro_rules! log {
+    ($($input:tt)+) => {js_log(&format!($($input)+))};
 }
 
 #[wasm_bindgen(start)]
@@ -57,7 +62,8 @@ pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Resu
 
 /// Create or update a canister. Returns `true` if a canister was successfully updated.
 #[wasm_bindgen]
-pub fn update_canister(_alias: String, source: String) -> Result {
+pub fn update_canister(alias: String, source: String) -> Result {
+    log!("[wasm] updating canister: {}", alias);
     CORE.with(|core| {
         // TODO: multiple canisters, error handling
         let result = core.borrow_mut().eval(&source);
@@ -67,7 +73,8 @@ pub fn update_canister(_alias: String, source: String) -> Result {
 
 /// Remove a canister if it exists. Returns `true` if a canister was successfully removed.
 #[wasm_bindgen]
-pub fn remove_canister(_alias: String) -> Result {
+pub fn remove_canister(alias: String) -> Result {
+    log!("[wasm] removing canister: {}", alias);
     CORE.with(|_core| {
         // TODO
         js_return(&true)

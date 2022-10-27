@@ -6,28 +6,32 @@ import wasm from './wasm';
 import { getDfxCanisters, Canister } from './canister';
 
 export function watch(directory: string) {
-    let dfxConfig: DfxConfig | undefined;
+    // let dfxConfig: DfxConfig | undefined;
     let canisters: Canister[] | undefined;
 
     const updateDfxConfig = () => {
-        dfxConfig = loadDfxConfig(directory);
-        canisters = getDfxCanisters(dfxConfig);
+        const dfxConfig = loadDfxConfig(directory);
+        canisters = getDfxCanisters(directory, dfxConfig);
     };
     updateDfxConfig();
 
     const updateCanister = (canister: Canister) => {
-        console.log('Updated canister:', canister.alias);
         wasm.update_canister(
             canister.alias,
             readFileSync(canister.file, 'utf8'),
         );
     };
+
     const removeCanister = (canister: Canister) => {
-        console.log('Removed canister:', canister.alias);
         wasm.remove_canister(canister.alias);
     };
 
-    chokidar.watch(resolve(directory, 'dfx.json')).on('change', () => {
+    chokidar.watch('./dfx.json', { cwd: directory }).on('change', (path) => {
+        if (!path.endsWith('dfx.json')) {
+            console.warn('Received unexpected `dfx.json` path:', path);
+            return;
+        }
+        console.log('Updating', path);
         const previousCanisters = canisters;
         updateDfxConfig();
         previousCanisters?.forEach((canister) => {
@@ -40,10 +44,13 @@ export function watch(directory: string) {
         });
     });
 
-    chokidar.watch(resolve(directory, '**/*.mo')).on('all', (event, path) => {
+    chokidar.watch('**/*.mo', { cwd: directory }).on('all', (event, path) => {
+        if (!path.endsWith('.mo')) {
+            return;
+        }
         console.log(event, path);
         canisters.forEach((canister) => {
-            if (resolve(directory, path) === resolve(canister.file)) {
+            if (resolve(directory, path) === canister.file) {
                 if (path === 'unlink') {
                     removeCanister(canister);
                 } else {
