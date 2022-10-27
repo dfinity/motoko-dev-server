@@ -40,21 +40,16 @@ export function watch(directory: string) {
         });
     });
 
-    chokidar
-        .watch(resolve(directory, '**/*.mo'))
-        .on('add change unlink', (event, path) => {
-            if (path.endsWith('.mo')) {
-                console.log(event, path);
-                canisters.forEach((canister) => {
-                    if (resolve(directory, path) === resolve(canister.file)) {
-                        if (path === 'unlink') {
-                            removeCanister(canister);
-                        } else {
-                            updateCanister(canister);
-                        }
-                    }
-                });
-            } else if (path.endsWith('dfx.json')) {
+    chokidar.watch(resolve(directory, '**/*.mo')).on('all', (event, path) => {
+        console.log(event, path);
+        canisters.forEach((canister) => {
+            if (resolve(directory, path) === resolve(canister.file)) {
+                if (path === 'unlink') {
+                    removeCanister(canister);
+                } else {
+                    updateCanister(canister);
+                }
             }
         });
+    });
 }
