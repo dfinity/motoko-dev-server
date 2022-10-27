@@ -43,6 +43,7 @@ pub fn start() {
     console_error_panic_hook::set_once();
 }
 
+/// Handle a message directed at the IC replica.
 #[wasm_bindgen]
 pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Result {
     let message: Message = from_value(message)?;
@@ -54,10 +55,11 @@ pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Resu
     js_return(&candid::encode_one("abc")?)
 }
 
+/// Create or update a canister. Returns `true` if a canister was successfully updated.
 #[wasm_bindgen]
 pub fn update_canister(_alias: String, source: String) -> Result<bool> {
     CORE.with(|core| {
-        // TODO: multiple canisters
+        // TODO: multiple canisters, error handling
         let result = core.get_mut().eval(&source);
         js_return(&result.is_ok())
     })
