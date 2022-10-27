@@ -1,10 +1,11 @@
 // Derived from: https://github.com/comino/cbor-body-parser/blob/master/index.js
 
-const read = require('body-parser/lib/read');
-const { decode: cborDecode } = require('cbor');
-const bytes = require('bytes');
+// @ts-ignore
+import read from 'body-parser/lib/read';
+import { decode as cborDecode } from 'cbor';
+import bytes from 'bytes';
 const debug = require('debug')('cbor-parser');
-const typeis = require('type-is');
+import typeis from 'type-is';
 
 interface CborOptions {
     limit: number | string;
