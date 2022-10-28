@@ -1,4 +1,4 @@
-use motoko::vm_types::Core;
+use motoko::{vm_types::Core, ast::ToId};
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 use std::cell::RefCell;
@@ -27,6 +27,11 @@ struct Message {
     method_name: String,
     request_type: String,
     sender: Vec<u8>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+struct Response {
+    value: Vec<u8>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -73,8 +78,14 @@ pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Resu
 pub fn update_canister(alias: String, source: String) -> Result {
     log!("[wasm] updating canister: {}", alias);
     CORE.with(|core| {
-        // TODO: multiple canisters, error handling
-        let result = core.borrow_mut().eval(&source);
+        let mut core = core.borrow_mut();
+        let id = motoko::value::ActorId::Alias(alias.to_id());
+        match core.actors.map.get(&id) {
+            None => core.create_actor(id, &source),
+            Some(_) => core.upgrade_actor(id, &source),
+        }
+        .map_err(|e| JsError::new(&format!("{:?}", e)))?;
+        let result = core.eval(&source);
         js_return(&result.is_ok())
     })
 }
@@ -83,8 +94,9 @@ pub fn update_canister(alias: String, source: String) -> Result {
 #[wasm_bindgen]
 pub fn remove_canister(alias: String) -> Result {
     log!("[wasm] removing canister: {}", alias);
-    CORE.with(|_core| {
-        // TODO
-        js_return(&true)
+    CORE.with(|core| {
+        let mut core = core.borrow_mut();
+        let id = motoko::value::ActorId::Alias(alias.to_id());
+        js_return(&core.actors.map.remove(&id).is_some())
     })
 }
