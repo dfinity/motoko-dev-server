@@ -10,13 +10,21 @@ thread_local! {
     static CORE: RefCell<Core>  = RefCell::new(Core::empty());
 }
 
+// #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+// struct Message {
+//     arg: Vec<u8>,
+//     canister_id: Vec<u8>,
+//     ingress_expiry: String,
+//     method_name: String,
+//     nonce: Vec<u8>,
+//     request_type: String,
+//     sender: Vec<u8>,
+// }
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Message {
     arg: Vec<u8>,
-    canister_id: Vec<u8>,
-    ingress_expiry: String,
     method_name: String,
-    nonce: Vec<u8>,
     request_type: String,
     sender: Vec<u8>,
 }

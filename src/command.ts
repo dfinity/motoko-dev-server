@@ -1,4 +1,4 @@
-import { startReplica } from './replica';
+// import { startReplica } from './replica';
 import server from './server';
 import { program } from 'commander';
 import { resolve } from 'path';
