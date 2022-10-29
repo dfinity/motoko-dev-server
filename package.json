@@ -76,7 +76,8 @@
     "files": [
         "index.js",
         "bin/**/*",
-        "lib/**/*"
+        "lib/**/*",
+        "wasm/pkg/**/*"
     ],
     "keywords": [
         "motoko",
