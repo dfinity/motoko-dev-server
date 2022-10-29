@@ -14,9 +14,7 @@ export default (app: express.Application) => {
 
             console.log('RESULT:', result); ///
 
-            // res.status(500).send('Unimplemented');
-            res.status(200).end();
-            // res.status(200).send(cborEncode({}));
+            res.status(200).json(result);
         } catch (err) {
             next(err);
         }

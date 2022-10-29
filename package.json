@@ -11,7 +11,7 @@
         "start": "ts-node src/command",
         "build:ts": "rimraf ./lib && tsc -p .",
         "build:wasm": "wasm-pack build wasm --target nodejs --out-dir pkg/nodejs",
-        "build": "run-s build:ts build:wasm",
+        "build": "run-s build:wasm build:ts",
         "prepare": "husky install",
         "generate": "node utils/generate",
         "test": "jest",
@@ -75,6 +75,7 @@
     },
     "files": [
         "index.js",
+        "bin/**/*",
         "lib/**/*"
     ],
     "keywords": [

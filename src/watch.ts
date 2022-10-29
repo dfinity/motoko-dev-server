@@ -23,14 +23,28 @@ export function watch(directory: string) {
     updateDfxConfig();
 
     const updateCanister = (canister: Canister) => {
-        wasm.update_canister(
-            canister.alias,
-            readFileSync(canister.file, 'utf8'),
-        );
+        try {
+            wasm.update_canister(
+                canister.alias,
+                readFileSync(canister.file, 'utf8'),
+            );
+        } catch (err) {
+            console.error(
+                `Error while updating canister '${canister.alias}':`,
+                err,
+            );
+        }
     };
 
     const removeCanister = (canister: Canister) => {
-        wasm.remove_canister(canister.alias);
+        try {
+            wasm.remove_canister(canister.alias);
+        } catch (err) {
+            console.error(
+                `Error while removing canister '${canister.alias}':`,
+                err,
+            );
+        }
     };
 
     chokidar.watch('./dfx.json', { cwd: directory }).on('change', (path) => {

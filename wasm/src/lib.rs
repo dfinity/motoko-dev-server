@@ -1,4 +1,4 @@
-use motoko::{vm_types::Core, ast::ToId};
+use motoko::{ast::ToId, vm_types::Core};
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 use std::cell::RefCell;
@@ -10,21 +10,13 @@ thread_local! {
     static CORE: RefCell<Core>  = RefCell::new(Core::empty());
 }
 
-// #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-// struct Message {
-//     arg: Vec<u8>,
-//     canister_id: Vec<u8>,
-//     ingress_expiry: String,
-//     method_name: String,
-//     nonce: Vec<u8>,
-//     request_type: String,
-//     sender: Vec<u8>,
-// }
-
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 struct Message {
     arg: Vec<u8>,
+    canister_id: Vec<u8>,
+    ingress_expiry: String,
     method_name: String,
+    nonce: Vec<u8>,
     request_type: String,
     sender: Vec<u8>,
 }
@@ -70,7 +62,18 @@ pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Resu
 
     println!("Candid args: {:?}", args);
 
+    // TODO
+
     js_return(&candid::encode_one("abc")?)
+}
+
+/// Directly call a canister from JavaScript.
+#[wasm_bindgen]
+pub fn call_canister(_alias: String, _method: String, _args: JsValue) -> Result {
+    // let args = serde_json::to_value(&args)?;
+    // let
+
+    unimplemented!()
 }
 
 /// Create or update a canister. Returns `true` if a canister was successfully updated.
@@ -85,8 +88,8 @@ pub fn update_canister(alias: String, source: String) -> Result {
             Some(_) => core.upgrade_actor(id, &source),
         }
         .map_err(|e| JsError::new(&format!("{:?}", e)))?;
-        let result = core.eval(&source);
-        js_return(&result.is_ok())
+        js_return(&())
+        // js_return(&result.is_ok())
     })
 }
 
