@@ -12,12 +12,16 @@ export function watch(directory: string) {
     const updateDfxConfig = () => {
         try {
             const dfxConfig = loadDfxConfig(directory);
+            if (!dfxConfig) {
+                console.error(
+                    'Could not find a `dfx.json` file in directory:',
+                    directory,
+                );
+                return;
+            }
             canisters = getDfxCanisters(directory, dfxConfig);
         } catch (err) {
-            console.error(
-                'Could not find a `dfx.json` file in directory:',
-                directory,
-            );
+            console.error('Error while loading `dfx.json` file:', err);
         }
     };
     updateDfxConfig();

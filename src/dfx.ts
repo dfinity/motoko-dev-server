@@ -1,5 +1,5 @@
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import { readFileSync } from 'fs';
 
 export interface DfxConfig {
     dfx?: string;
@@ -11,7 +11,10 @@ export interface CanisterConfig {
     main?: string;
 }
 
-export function loadDfxConfig(directory: string): DfxConfig {
+export function loadDfxConfig(directory: string): DfxConfig | undefined {
+    if (!existsSync(directory)) {
+        return;
+    }
     return <DfxConfig>(
         JSON.parse(readFileSync(resolve(directory, 'dfx.json'), 'utf8'))
     );
