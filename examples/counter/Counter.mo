@@ -1,7 +1,7 @@
 actor {
     var counter = 0;
 
-    public func get() {
+    public func get() : async Nat {
         counter
     };
 

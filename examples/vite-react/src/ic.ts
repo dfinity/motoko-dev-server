@@ -1,6 +1,7 @@
 export class Canister {
-    async call(method: string, ...args: any[]) {
+    async call<T>(method: string, ...args: any[]): Promise<T> {
         // TODO
+        throw new Error('Not yet implemented');
     }
 }
 

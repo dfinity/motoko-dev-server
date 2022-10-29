@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import reactLogo from './assets/react.svg';
 import './App.css';
-import { getCanister } from './ic';
+import { getCanister as getDfxCanister } from './ic';
 
-const counter = getCanister('counter');
+const counter = getDfxCanister('counter');
 
-const initialCount = await counter.call('get');
+const initialCount: number = await counter.call('get');
 
 function App() {
     const [count, setCount] = useState(initialCount);
@@ -31,7 +31,7 @@ function App() {
             </div>
             <h1>Vite + React</h1>
             <div className="card">
-                <button onClick={() => increment()}>count is {count}</button>
+                <button onClick={increment}>count is {count}</button>
                 <p>
                     Edit <code>src/App.tsx</code> and save to test HMR
                 </p>
