@@ -1,4 +1,8 @@
-use motoko::{ast::ToId, vm_types::Core};
+use motoko::{
+    ast::ToId,
+    vm_types::{Core, Limits},
+    Interruption, ToMotoko, Value,
+};
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
 use std::cell::RefCell;
@@ -43,6 +47,10 @@ fn js_return<T: Serialize>(value: &T) -> Result {
     to_value(value).map_err(|e| JsError::new(&format!("Serialization error ({:?})", e)))
 }
 
+fn js_error(error: impl Into<Interruption>) -> JsError {
+    JsError::new(&format!("{:?}", error.into()))
+}
+
 macro_rules! log {
     ($($input:tt)+) => {js_log(&format!($($input)+))};
 }
@@ -56,24 +64,28 @@ pub fn start() {
 /// Handle a message directed at the IC replica.
 #[wasm_bindgen]
 pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Result {
-    let message: Message = from_value(message)?;
-
-    let args = candid::decode_args(&message.arg)?;
-
-    println!("Candid args: {:?}", args);
-
-    // TODO
-
-    js_return(&candid::encode_one("abc")?)
+    // let message: Message = from_value(message)?;
+    // let args = candid::decode_args(&message.arg)?;
+    // println!("Candid args: {:?}", args);
+    // js_return(&candid::encode_one("abc")?)
+    unimplemented!()
 }
 
 /// Directly call a canister from JavaScript.
 #[wasm_bindgen]
-pub fn call_canister(_alias: String, _method: String, _args: JsValue) -> Result {
-    // let args = serde_json::to_value(&args)?;
-    // let
-
-    unimplemented!()
+pub fn call_canister(alias: String, method: String, args: JsValue) -> Result {
+    log!("[wasm] calling canister: {}", alias);
+    let args = ().to_motoko().to_shared().map_err(js_error)?; // TODO: use JS input
+    CORE.with(|core| {
+        let mut core = core.borrow_mut();
+        let id = motoko::value::ActorId::Alias(alias.to_id());
+        let limits = Limits::none();
+        let value = core
+            .call(&id, &method.to_id(), args, &limits)
+            .map_err(js_error)?;
+        // TODO: convert value to JS
+        js_return(&value)
+    })
 }
 
 /// Create or update a canister. Returns `true` if a canister was successfully updated.
@@ -83,11 +95,7 @@ pub fn update_canister(alias: String, source: String) -> Result {
     CORE.with(|core| {
         let mut core = core.borrow_mut();
         let id = motoko::value::ActorId::Alias(alias.to_id());
-        match core.actors.map.get(&id) {
-            None => core.create_actor(id, &source),
-            Some(_) => core.upgrade_actor(id, &source),
-        }
-        .map_err(|e| JsError::new(&format!("{:?}", e)))?;
+        core.set_actor(id, &source).map_err(js_error)?;
         js_return(&())
         // js_return(&result.is_ok())
     })
