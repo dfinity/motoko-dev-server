@@ -3,9 +3,11 @@ import reactLogo from './assets/react.svg';
 import motokoLogo from './assets/motoko_moving.png';
 import motokoShadowLogo from './assets/motoko_shadow.png';
 import './App.css';
-import { getDevCanister } from './ic';
+import { devCanister, replicaCanister } from './ic';
 
-const counter = getDevCanister('counter');
+const counter = import.meta.env.DEV
+    ? devCanister('counter')
+    : replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
 
 function App() {
     const [count, setCount] = useState<number | undefined>();

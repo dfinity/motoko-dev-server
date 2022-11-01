@@ -1,6 +1,9 @@
 const DEV_SERVER_URL = 'http://localhost:7000';
 
-export class Canister {
+export interface Canister {
+    call(method: string, ...args: any[]): Promise<any>;
+}
+export class DevCanister implements Canister {
     public alias: string;
 
     constructor(alias: string) {
@@ -36,6 +39,22 @@ export class Canister {
     }
 }
 
-export function getDevCanister(alias: string): Canister {
-    return new Canister(alias);
+export class ReplicaCanister implements Canister {
+    public id: string;
+
+    constructor(id: string) {
+        this.id = id;
+    }
+
+    async call(method: string, ...args: any[]): Promise<any> {
+        throw new Error('Not yet implemented');
+    }
+}
+
+export function devCanister(alias: string): DevCanister {
+    return new DevCanister(alias);
+}
+
+export function replicaCanister(id: string): ReplicaCanister {
+    return new ReplicaCanister(id);
 }
