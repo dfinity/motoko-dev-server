@@ -1,3 +1,4 @@
+import { Settings } from './settings';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -8,26 +9,28 @@ import morgan from 'morgan';
 import proxy from './proxy';
 import routes from './routes';
 
-const app = express();
+export default function createApp(settings: Settings) {
+    const app = express();
 
-app.use(morgan('dev'));
-app.use(cors());
-// app.use(hpp());
-// app.use(helmet({ contentSecurityPolicy: false }));
-// app.use(compression());
-// app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+    app.use(morgan('dev'));
+    app.use(cors());
+    // app.use(hpp());
+    // app.use(helmet({ contentSecurityPolicy: false }));
+    // app.use(compression());
+    // app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(cookieParser());
 
-routes.forEach((route) => route(app));
+    routes.forEach((route) => route(app, settings));
 
-app.use((err: any, _req: any, res: any, _next: any) => {
-    console.error(err);
-    res.status(500).end();
-});
+    app.use((err: any, _req: any, res: any, _next: any) => {
+        console.error(err);
+        res.status(500).end();
+    });
 
-// app.use(express.static(join(__dirname, '../public')));
+    // app.use(express.static(join(__dirname, '../public')));
 
-// app.use(proxy);
+    // app.use(proxy);
 
-export default app;
+    return app;
+}

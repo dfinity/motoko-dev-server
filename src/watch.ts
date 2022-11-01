@@ -1,3 +1,4 @@
+import { Settings } from './settings';
 import { readFileSync } from 'fs';
 import { DfxConfig, loadDfxConfig } from './dfx';
 import { resolve } from 'path';
@@ -5,7 +6,7 @@ import chokidar from 'chokidar';
 import wasm from './wasm';
 import { getDfxCanisters, Canister } from './canister';
 
-export function watch(directory: string) {
+export function watch({ directory }: Settings) {
     // let dfxConfig: DfxConfig | undefined;
     let canisters: Canister[] | undefined;
 

@@ -1,20 +1,31 @@
-// import { startReplica } from './replica';
-import server from './server';
 import { program } from 'commander';
+import { createServer } from 'http';
 import { resolve } from 'path';
+import createApp from './app';
+import { Settings } from './settings';
 import { watch } from './watch';
 
-const {} = program.argument('[directory]', 'dfx directory').parse().opts();
+const { delay } = program
+    .argument('[directory]', 'dfx directory')
+    .option('-d, --delay', 'artificial delay')
+    .parse()
+    .opts();
 
-const directory = resolve(process.cwd(), program.args[0] || '.');
+const settings: Settings = {
+    directory: resolve(process.cwd(), program.args[0] || '.'),
+    delay,
+};
+
+if (delay) {
+    console.log('Adding artificial delay');
+}
 
 const devServerPort = +process.env.PORT || 7000;
-// const replicaPort = +process.env.DFX_PORT || 8001;
+
+const app = createApp(settings);
+const server = createServer(app);
 
 server.listen(devServerPort);
 console.log('Listening on port', devServerPort);
 
-// startReplica(directory,replicaPort);
-// console.log('Replica started on port', replicaPort);
-
-watch(directory);
+watch(settings);

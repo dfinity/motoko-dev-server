@@ -1,5 +1,7 @@
 import { spawn } from 'child_process';
 
+// Replica proxy fallback (currently unused)
+
 export function startReplica(directory: string, port: number) {
     const replica = spawn(
         'dfx',
@@ -16,5 +18,5 @@ export function startReplica(directory: string, port: number) {
     replica.stdout.pipe(process.stdout);
     replica.stderr.pipe(process.stderr);
 
-    // return replica;
+    return replica;
 }
