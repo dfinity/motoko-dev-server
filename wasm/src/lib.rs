@@ -5,7 +5,7 @@ use motoko::{
 };
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
-use std::cell::RefCell;
+use std::{borrow::Borrow, cell::RefCell, convert::TryInto};
 use wasm_bindgen::prelude::*;
 
 type Result<T = JsValue, E = JsError> = std::result::Result<T, E>;
@@ -51,6 +51,34 @@ fn js_error(error: impl Into<Interruption>) -> JsError {
     JsError::new(&format!("{:?}", error.into()))
 }
 
+fn motoko_to_js_value(value: &Value) -> Result {
+    Ok(match value {
+        Value::Null => JsValue::null(),
+        Value::Bool(b) => JsValue::from_bool(*b),
+        Value::Unit => JsValue::undefined(),
+        Value::Nat(n) => JsValue::from_str(&n.to_string()),
+        Value::Int(i) => JsValue::from_str(&i.to_string()),
+        Value::Float(f) => JsValue::from_f64(f.0),
+        Value::Char(c) => JsValue::from_str(&c.to_string()),
+        Value::Text(s) => JsValue::from_str(&s.to_string()),
+        Value::Blob(_) => todo!(),
+        Value::Array(_, _) => todo!(),
+        Value::Tuple(_) => todo!(),
+        Value::Object(_) => todo!(),
+        Value::Option(o) => motoko_to_js_value(o.borrow())?,
+        Value::Variant(_, _) => todo!(),
+        Value::Pointer(_) => todo!(),
+        Value::Opaque(_) => todo!(),
+        Value::Index(_, _) => todo!(),
+        Value::Function(_) => todo!(),
+        Value::PrimFunction(_) => todo!(),
+        Value::Collection(_) => todo!(),
+        Value::Dynamic(_) => todo!(),
+        Value::Actor(_) => todo!(),
+        Value::ActorMethod(_) => todo!(),
+    })
+}
+
 macro_rules! log {
     ($($input:tt)+) => {js_log(&format!($($input)+))};
 }
@@ -63,7 +91,7 @@ pub fn start() {
 
 /// Handle a message directed at the IC replica.
 #[wasm_bindgen]
-pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Result {
+pub fn handle_message(_alias: String, _method: String, _message: JsValue) -> Result {
     // let message: Message = from_value(message)?;
     // let args = candid::decode_args(&message.arg)?;
     // println!("Candid args: {:?}", args);
@@ -74,17 +102,19 @@ pub fn handle_message(_alias: String, _method: String, message: JsValue) -> Resu
 /// Directly call a canister from JavaScript.
 #[wasm_bindgen]
 pub fn call_canister(alias: String, method: String, args: JsValue) -> Result {
-    log!("[wasm] calling canister: {}", alias);
-    let args = ().to_motoko().to_shared().map_err(js_error)?; // TODO: use JS input
+    log!("[wasm] calling canister: {}.{}", alias, method);
+    let args = ().to_shared().map_err(js_error)?; // TODO: use JS input
+    log!("[wasm] input: {:?}", args);
     CORE.with(|core| {
-        let mut core = core.borrow_mut();
+        let mut new_core = core.borrow().clone();
         let id = motoko::value::ActorId::Alias(alias.to_id());
         let limits = Limits::none();
-        let value = core
+        let value = new_core
             .call(&id, &method.to_id(), args, &limits)
             .map_err(js_error)?;
-        // TODO: convert value to JS
-        js_return(&value)
+            // TODO: don't update the core for `query` methods
+            *core.borrow_mut() = new_core;
+        motoko_to_js_value(&value)
     })
 }
 
