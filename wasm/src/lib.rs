@@ -4,14 +4,14 @@ use motoko::{
     Interruption, ToMotoko, Value,
 };
 use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::{from_value, to_value};
-use std::{borrow::Borrow, cell::RefCell, convert::TryInto};
+use serde_wasm_bindgen::to_value;
+use std::{borrow::Borrow, cell::RefCell};
 use wasm_bindgen::prelude::*;
 
 type Result<T = JsValue, E = JsError> = std::result::Result<T, E>;
 
 thread_local! {
-    static CORE: RefCell<Core>  = RefCell::new(Core::empty());
+    static CORE: RefCell<Core> = RefCell::new(Core::empty());
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -112,8 +112,8 @@ pub fn call_canister(alias: String, method: String, args: JsValue) -> Result {
         let value = new_core
             .call(&id, &method.to_id(), args, &limits)
             .map_err(js_error)?;
-            // TODO: don't update the core for `query` methods
-            *core.borrow_mut() = new_core;
+        // TODO: don't update the core for `query` methods
+        *core.borrow_mut() = new_core;
         motoko_to_js_value(&value)
     })
 }
