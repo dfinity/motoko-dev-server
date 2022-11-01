@@ -10,11 +10,17 @@ export default (app: express.Application) => {
 
             console.log(alias, message);
 
-            const result = wasm.handle_message(alias, method, message);
+            const value = wasm.call_canister(
+                alias,
+                method,
+                message?.args || [],
+            );
 
-            console.log('RESULT:', result); ///
+            console.log('Value:', JSON.stringify(value)); ///
 
-            res.status(200).json(result);
+            res.json({
+                value,
+            });
         } catch (err) {
             next(err);
         }

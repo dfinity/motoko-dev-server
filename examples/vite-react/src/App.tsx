@@ -1,18 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import reactLogo from './assets/react.svg';
+import motokoLogo from './assets/motoko.png';
 import './App.css';
-import { getCanister as getDfxCanister } from './ic';
+import { getDevCanister } from './ic';
 
-const counter = getDfxCanister('counter');
-
-const initialCount: number = await counter.call('get');
+const counter = getDevCanister('counter');
 
 function App() {
-    const [count, setCount] = useState(initialCount);
+    const [count, setCount] = useState(0);
+
+    const fetchCount = () =>
+        counter
+            .call('get')
+            .then((result) => setCount(+result))
+            .catch(console.error);
+
+    useEffect(() => {
+        fetchCount();
+    }, []);
 
     const increment = async () => {
         await counter.call('inc');
-        setCount(await counter.call('get'));
+        await fetchCount();
     };
 
     return (
@@ -28,8 +37,15 @@ function App() {
                         alt="React logo"
                     />
                 </a>
+                <a href="https://smartcontracts.org" target="_blank">
+                    <img
+                        src={motokoLogo}
+                        className="logo motoko"
+                        alt="Motoko logo"
+                    />
+                </a>
             </div>
-            <h1>Vite + React</h1>
+            <h1>Vite + React + Motoko</h1>
             <div className="card">
                 <button onClick={increment}>count is {count}</button>
                 <p>

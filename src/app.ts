@@ -11,7 +11,7 @@ import routes from './routes';
 const app = express();
 
 app.use(morgan('dev'));
-// app.use(cors());
+app.use(cors());
 // app.use(hpp());
 // app.use(helmet({ contentSecurityPolicy: false }));
 // app.use(compression());
@@ -19,7 +19,6 @@ app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// routes.forEach((route) => app.use(route));
 routes.forEach((route) => route(app));
 
 app.use((err: any, _req: any, res: any, _next: any) => {
@@ -29,6 +28,6 @@ app.use((err: any, _req: any, res: any, _next: any) => {
 
 // app.use(express.static(join(__dirname, '../public')));
 
-app.use(proxy);
+// app.use(proxy);
 
 export default app;
