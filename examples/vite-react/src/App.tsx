@@ -8,7 +8,7 @@ import { getDevCanister } from './ic';
 const counter = getDevCanister('counter');
 
 function App() {
-    const [count, setCount] = useState(0);
+    const [count, setCount] = useState<number | undefined>();
 
     const fetchCount = () =>
         counter
