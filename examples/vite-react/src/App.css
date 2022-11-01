@@ -36,21 +36,30 @@
     filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+.logo-stack {
+    display: inline-grid;
+}
+
+.logo-stack > * {
+    grid-column: 1;
+    grid-row: 1;
+}
+
 @keyframes logo-swim {
     from {
-        transform: rotate(3deg) translateY(0);
+        transform: rotate(4deg) translateY(0);
     }
     50% {
-        transform: rotate(-3deg) translateY(0);
+        transform: rotate(-5deg) translateY(0);
     }
     to {
-        transform: rotate(3deg) translateY(0);
+        transform: rotate(4deg) translateY(0);
     }
 }
 
 @media (prefers-reduced-motion: no-preference) {
     .logo.motoko {
-        animation: logo-swim 5s ease infinite;
+        animation: logo-swim 5s ease-in-out infinite;
     }
 }
 

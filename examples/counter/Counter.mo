@@ -6,6 +6,6 @@ actor {
     };
 
     public func inc() {
-        counter := counter + 1;
+        counter += 1;
     };
 };
