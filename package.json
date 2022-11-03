@@ -12,6 +12,7 @@
         "build:ts": "rimraf ./lib && tsc -p .",
         "build:wasm": "wasm-pack build wasm --target nodejs --out-dir pkg/nodejs",
         "build": "run-s build:wasm build:ts",
+        "update:wasm": "cd wasm && cargo update",
         "prepare": "husky install",
         "generate": "node utils/generate",
         "test": "jest",
