@@ -22,7 +22,9 @@ export function watch({ directory }: Settings) {
             }
             canisters = getDfxCanisters(directory, dfxConfig);
         } catch (err) {
-            console.error('Error while loading `dfx.json` file:', err);
+            console.error(
+                `Error while loading 'dfx.json' file:\n${err.message || err}`,
+            );
         }
     };
     updateDfxConfig();
@@ -35,8 +37,9 @@ export function watch({ directory }: Settings) {
             );
         } catch (err) {
             console.error(
-                `Error while updating canister '${canister.alias}':`,
-                err,
+                `Error while updating canister '${canister.alias}':\n${
+                    err.message || err
+                }`,
             );
         }
     };
@@ -46,8 +49,9 @@ export function watch({ directory }: Settings) {
             wasm.remove_canister(canister.alias);
         } catch (err) {
             console.error(
-                `Error while removing canister '${canister.alias}':`,
-                err,
+                `Error while removing canister '${canister.alias}':\n${
+                    err.message || err
+                }`,
             );
         }
     };
