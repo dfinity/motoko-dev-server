@@ -120,13 +120,13 @@ pub fn call_canister(alias: String, method: String, args: JsValue) -> Result {
 
 /// Create or update a canister. Returns `true` if a canister was successfully updated.
 #[wasm_bindgen]
-pub fn update_canister(alias: String, source: String) -> Result {
+pub fn update_canister(path: String, alias: String, source: String) -> Result {
     log!("[wasm] updating canister: {}", alias);
     CORE.with(|core| {
         // let mut core = core.borrow_mut();
         let id = motoko::value::ActorId::Alias(alias.to_id());
         let mut new_core = core.borrow().clone();
-        new_core.set_actor(id, &source).map_err(js_error)?;
+        new_core.set_actor(path, id, &source).map_err(js_error)?;
         *core.borrow_mut() = new_core;
         js_return(&())
         // js_return(&result.is_ok())

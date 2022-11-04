@@ -32,6 +32,7 @@ export function watch({ directory }: Settings) {
     const updateCanister = (canister: Canister) => {
         try {
             wasm.update_canister(
+                canister.file,
                 canister.alias,
                 readFileSync(canister.file, 'utf8'),
             );
