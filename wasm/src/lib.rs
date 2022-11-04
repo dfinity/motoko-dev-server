@@ -5,7 +5,7 @@ use motoko::{
 };
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
-use std::{borrow::{Borrow, BorrowMut}, cell::RefCell};
+use std::{borrow::Borrow, cell::RefCell};
 use wasm_bindgen::prelude::*;
 
 type Result<T = JsValue, E = JsError> = std::result::Result<T, E>;
