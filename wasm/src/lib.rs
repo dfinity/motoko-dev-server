@@ -5,7 +5,7 @@ use motoko::{
 };
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
-use std::{borrow::Borrow, cell::RefCell};
+use std::{borrow::{Borrow, BorrowMut}, cell::RefCell};
 use wasm_bindgen::prelude::*;
 
 type Result<T = JsValue, E = JsError> = std::result::Result<T, E>;
@@ -123,9 +123,11 @@ pub fn call_canister(alias: String, method: String, args: JsValue) -> Result {
 pub fn update_canister(alias: String, source: String) -> Result {
     log!("[wasm] updating canister: {}", alias);
     CORE.with(|core| {
-        let mut core = core.borrow_mut();
+        // let mut core = core.borrow_mut();
         let id = motoko::value::ActorId::Alias(alias.to_id());
-        core.set_actor(id, &source).map_err(js_error)?;
+        let mut new_core = core.borrow().clone();
+        new_core.set_actor(id, &source).map_err(js_error)?;
+        *core.borrow_mut() = new_core;
         js_return(&())
         // js_return(&result.is_ok())
     })
