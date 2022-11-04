@@ -5,15 +5,15 @@ import motokoShadowLogo from './assets/motoko_shadow.png';
 import './App.css';
 import { devCanister, replicaCanister } from './ic';
 
-const counter = import.meta.env.DEV
-    ? devCanister('counter')
+const backend = import.meta.env.DEV
+    ? devCanister('backend')
     : replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
 
 function App() {
     const [count, setCount] = useState<number | undefined>();
 
     const fetchCount = () =>
-        counter
+        backend
             .call('get')
             .then((result) => setCount(+result))
             .catch(console.error);
@@ -23,7 +23,7 @@ function App() {
     }, []);
 
     const increment = async () => {
-        await counter.call('inc');
+        await backend.call('inc');
         await fetchCount();
     };
 
