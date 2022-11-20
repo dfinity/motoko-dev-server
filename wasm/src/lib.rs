@@ -1,7 +1,7 @@
 use motoko::{
     ast::ToId,
     vm_types::{Core, Limits},
-    Interruption, ToMotoko, Value,
+    Interruption, Share, Value,
 };
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
@@ -52,6 +52,7 @@ fn js_error(error: impl Into<Interruption>) -> JsError {
 }
 
 fn motoko_to_js_value(value: &Value) -> Result {
+    // TODO: replace with Candid
     Ok(match value {
         Value::Null => JsValue::null(),
         Value::Bool(b) => JsValue::from_bool(*b),
@@ -61,21 +62,8 @@ fn motoko_to_js_value(value: &Value) -> Result {
         Value::Float(f) => JsValue::from_f64(f.0),
         Value::Char(c) => JsValue::from_str(&c.to_string()),
         Value::Text(s) => JsValue::from_str(&s.to_string()),
-        Value::Blob(_) => todo!(),
-        Value::Array(_, _) => todo!(),
-        Value::Tuple(_) => todo!(),
-        Value::Object(_) => todo!(),
         Value::Option(o) => motoko_to_js_value(o.borrow())?,
-        Value::Variant(_, _) => todo!(),
-        Value::Pointer(_) => todo!(),
-        Value::Opaque(_) => todo!(),
-        Value::Index(_, _) => todo!(),
-        Value::Function(_) => todo!(),
-        Value::PrimFunction(_) => todo!(),
-        Value::Collection(_) => todo!(),
-        Value::Dynamic(_) => todo!(),
-        Value::Actor(_) => todo!(),
-        Value::ActorMethod(_) => todo!(),
+        _ => todo!(),
     })
 }
 
@@ -101,9 +89,10 @@ pub fn handle_message(_alias: String, _method: String, _message: JsValue) -> Res
 
 /// Directly call a canister from JavaScript.
 #[wasm_bindgen]
-pub fn call_canister(alias: String, method: String, args: JsValue) -> Result {
+pub fn call_canister(alias: String, method: String, args: Vec<u8>) -> Result {
     log!("[wasm] calling canister: {}.{}", alias, method);
-    let args = ().to_shared().map_err(js_error)?; // TODO: use JS input
+    // let args = ().to_shared().map_err(js_error)?; // TODO: use JS input
+    let args = motoko::candid_utils::decode_candid_args(&args)?.share();
     log!("[wasm] input: {:?}", args);
     CORE.with(|core| {
         let mut new_core = core.borrow().clone();

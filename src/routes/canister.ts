@@ -11,11 +11,11 @@ export default (app: express.Application, { delay }: Settings) => {
 
             console.log(alias, message);
 
-            const value = wasm.call_canister(
-                alias,
-                method,
-                message?.args || [],
-            );
+            const args = message?.args || [];
+
+            const candid = new Uint8Array([]); /////
+
+            const value = wasm.call_canister(alias, method, candid);
 
             console.log('Value:', JSON.stringify(value)); ///
 
