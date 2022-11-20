@@ -1,3 +1,9 @@
+// TODO: refactor into an npm package
+
+import { HttpAgent, fetchCandid } from '@dfinity/agent';
+import { IDL } from '@dfinity/candid';
+import cbor from 'cbor';
+
 const DEV_SERVER_URL = 'http://localhost:7000';
 
 export interface Canister {
@@ -41,13 +47,33 @@ export class DevCanister implements Canister {
 
 export class ReplicaCanister implements Canister {
     public id: string;
+    public agent: HttpAgent;
 
-    constructor(id: string) {
+    private _candid: IDL.Type | undefined; ////
+
+    constructor(id: string, agent: HttpAgent) {
         this.id = id;
+        this.agent = agent;
+    }
+
+    private async fetchCandid() {
+        if (this._candid) {
+            return;
+        }
+        const source = await fetchCandid(this.id, this.agent);
+        console.log('candid source:', source); //
+        const candid = this._candid; //
+        this._candid = candid;
+        return candid;
     }
 
     async call(method: string, ...args: any[]): Promise<any> {
-        throw new Error('Not yet implemented');
+        const candid = this.fetchCandid();
+
+        this.agent.call(this.id, {
+            methodName: method,
+            arg: cbor.encode([]), ////
+        });
     }
 }
 
@@ -55,6 +81,15 @@ export function devCanister(alias: string): DevCanister {
     return new DevCanister(alias);
 }
 
-export function replicaCanister(id: string): ReplicaCanister {
-    return new ReplicaCanister(id);
+export function replicaCanister(
+    id: string,
+    agent: HttpAgent | undefined = undefined,
+): ReplicaCanister {
+    if (!agent) {
+        agent = new HttpAgent();
+        if (agent.isLocal()) {
+            agent.fetchRootKey();
+        }
+    }
+    return new ReplicaCanister(id, agent);
 }

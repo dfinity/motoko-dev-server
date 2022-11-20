@@ -5,9 +5,11 @@ import motokoShadowLogo from './assets/motoko_shadow.png';
 import './App.css';
 import { devCanister, replicaCanister } from './ic';
 
-const backend = import.meta.env.DEV
-    ? devCanister('backend')
-    : replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
+// const backend = import.meta.env.DEV
+//     ? devCanister('backend')
+//     : replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
+
+const backend = replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
 
 function App() {
     const [count, setCount] = useState<number | undefined>();
