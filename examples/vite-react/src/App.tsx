@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import reactLogo from './assets/react.svg';
+import './App.css';
 import motokoLogo from './assets/motoko_moving.png';
 import motokoShadowLogo from './assets/motoko_shadow.png';
-import './App.css';
+import reactLogo from './assets/react.svg';
 import { devCanister, replicaCanister } from './ic';
 
-// const backend = import.meta.env.DEV
-//     ? devCanister('backend')
-//     : replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
+const backend = import.meta.env.DEV
+    ? devCanister('backend')
+    : replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
 
-const backend = replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
+// const backend = replicaCanister('rrkah-fqaaa-aaaaa-aaaaq-cai');
 
 function App() {
     const [count, setCount] = useState<number | undefined>();

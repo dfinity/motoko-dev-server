@@ -1,8 +1,7 @@
 // TODO: refactor into an npm package
 
-import { HttpAgent, fetchCandid } from '@dfinity/agent';
+import { HttpAgent, fetchCandid, ActorSubclass, Actor } from '@dfinity/agent';
 import { IDL } from '@dfinity/candid';
-import cbor from 'cbor';
 
 const DEV_SERVER_URL = 'http://localhost:7000';
 
@@ -49,7 +48,7 @@ export class ReplicaCanister implements Canister {
     public id: string;
     public agent: HttpAgent;
 
-    private _candid: IDL.Type | undefined; ////
+    private _candid: IDL.Type | undefined;
 
     constructor(id: string, agent: HttpAgent) {
         this.id = id;
@@ -58,22 +57,37 @@ export class ReplicaCanister implements Canister {
 
     private async fetchCandid() {
         if (this._candid) {
-            return;
+            return this._candid;
         }
         const source = await fetchCandid(this.id, this.agent);
         console.log('candid source:', source); //
         const candid = this._candid; //
+
+        const didJsCanisterId = 'a4gq6-oaaaa-aaaab-qaa4q-cai';
+        const didJsInterface: IDL.InterfaceFactory = ({ IDL }) =>
+            IDL.Service({
+                did_to_js: IDL.Func([IDL.Text], [IDL.Opt(IDL.Text)], ['query']),
+            });
+        const didJs: ActorSubclass = Actor.createActor(didJsInterface, {
+            canisterId: didJsCanisterId,
+            agent: this.agent,
+        });
+
+        console.log(didJs); ///
+        // const result = didjs.
+
         this._candid = candid;
         return candid;
     }
 
     async call(method: string, ...args: any[]): Promise<any> {
-        const candid = this.fetchCandid();
+        const candid = await this.fetchCandid();
 
-        this.agent.call(this.id, {
-            methodName: method,
-            arg: cbor.encode([]), ////
-        });
+        // this.agent.call(this.id, {
+        //     methodName: method,
+        //     // arg: cbor.encode([]), ////
+        //     arg: new ArrayBuffer(0),
+        // });
     }
 }
 

@@ -1,7 +1,7 @@
 use motoko::{
     ast::ToId,
     vm_types::{Core, Limits},
-    Interruption, Share, Value,
+    Interruption, ToMotoko, Value,
 };
 use serde::{Deserialize, Serialize};
 use serde_wasm_bindgen::to_value;
@@ -89,10 +89,10 @@ pub fn handle_message(_alias: String, _method: String, _message: JsValue) -> Res
 
 /// Directly call a canister from JavaScript.
 #[wasm_bindgen]
-pub fn call_canister(alias: String, method: String, args: Vec<u8>) -> Result {
+pub fn call_canister(alias: String, method: String, _args: Vec<u8>) -> Result {
     log!("[wasm] calling canister: {}.{}", alias, method);
-    // let args = ().to_shared().map_err(js_error)?; // TODO: use JS input
-    let args = motoko::candid_utils::decode_candid_args(&args)?.share();
+    // let args = motoko::candid_utils::decode_candid_args(&args)?.share(); // TODO
+    let args = ().to_shared().map_err(js_error)?; ////
     log!("[wasm] input: {:?}", args);
     CORE.with(|core| {
         let mut new_core = core.borrow().clone();
@@ -131,4 +131,15 @@ pub fn remove_canister(alias: String) -> Result {
         let id = motoko::value::ActorId::Alias(alias.to_id());
         js_return(&core.actors.map.remove(&id).is_some())
     })
+}
+
+#[wasm_bindgen]
+pub fn candid_to_js(candid: String) -> Result {
+    use candid::{check_prog, IDLProg, TypeEnv};
+    let ast = candid
+        .parse::<IDLProg>()
+        .map_err(|err| JsError::new(&err.to_string()))?;
+    let mut env = TypeEnv::new();
+    let actor = check_prog(&mut env, &ast).map_err(|err| JsError::new(&err.to_string()))?;
+    js_return(&candid::bindings::javascript::compile(&env, &actor))
 }
