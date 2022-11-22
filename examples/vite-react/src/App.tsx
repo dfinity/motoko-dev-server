@@ -25,7 +25,7 @@ function App() {
     }, []);
 
     const increment = async () => {
-        await backend.call('inc');
+        await backend.call('add', 1);
         await fetchCount();
     };
 

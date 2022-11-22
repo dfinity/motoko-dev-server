@@ -19,6 +19,8 @@
         "prepublishOnly": "run-s build test"
     },
     "dependencies": {
+        "@dfinity/candid": "^0.14.1",
+        "@dfinity/principal": "^0.14.1",
         "body-parser": "1.20.1",
         "bytes": "3.1.2",
         "cbor": "8.1.0",

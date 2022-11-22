@@ -5,11 +5,16 @@ import { resolve } from 'path';
 import chokidar from 'chokidar';
 import wasm from './wasm';
 import { getDfxCanisters, Canister } from './canister';
+import { getVirtualFile } from './utils/motoko';
+
+// let dfxConfig: DfxConfig | undefined;
+let canisters: Canister[] | undefined;
+
+export function findCanister(alias: string): Canister | undefined {
+    return canisters.find((c) => c.alias === alias);
+}
 
 export function watch({ directory }: Settings) {
-    // let dfxConfig: DfxConfig | undefined;
-    let canisters: Canister[] | undefined;
-
     const updateDfxConfig = () => {
         try {
             const dfxConfig = loadDfxConfig(directory);
@@ -31,11 +36,10 @@ export function watch({ directory }: Settings) {
 
     const updateCanister = (canister: Canister) => {
         try {
-            wasm.update_canister(
-                canister.file,
-                canister.alias,
-                readFileSync(canister.file, 'utf8'),
-            );
+            const source = readFileSync(canister.file, 'utf8');
+            wasm.update_canister(canister.file, canister.alias, source);
+            const file = getVirtualFile(canister.file);
+            file.write(source);
         } catch (err) {
             console.error(
                 `Error while updating canister '${canister.alias}':\n${
@@ -48,6 +52,8 @@ export function watch({ directory }: Settings) {
     const removeCanister = (canister: Canister) => {
         try {
             wasm.remove_canister(canister.alias);
+            const file = getVirtualFile(canister.file);
+            file.delete();
         } catch (err) {
             console.error(
                 `Error while removing canister '${canister.alias}':\n${
