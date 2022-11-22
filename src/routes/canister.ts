@@ -12,7 +12,7 @@ export default (app: express.Application, { delay }: Settings) => {
             const { alias, method } = req.params;
             const message = req.body;
 
-            console.log(alias, message);
+            console.log(`${alias}.${method}`, message);
 
             const args = message?.args || [];
             if (!Array.isArray(args)) {
@@ -45,14 +45,14 @@ export default (app: express.Application, { delay }: Settings) => {
             ).idlFactory;
             const service = idlFactory({ IDL });
 
-            const field = service._fields.find(
-                ([method]) => method === method,
-            )?.[1];
+            const field = service._fields.find(([m]) => m === method)?.[1];
             if (!field) {
                 return res.status(400).json({
                     message: `Unknown canister method: ${alias}.${method}`,
                 });
             }
+            console.log(args, field.argTypes); /////
+
             const candid = IDL.encode(field.argTypes, args);
 
             const value = wasm.call_canister(

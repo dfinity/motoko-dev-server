@@ -10,6 +10,6 @@ actor {
     };
 
     public func add(i : Int) {
-        counter += 1; /////
+        counter += 1; // TODO: support `+= i`
     };
 };
