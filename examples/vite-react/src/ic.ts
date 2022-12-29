@@ -3,7 +3,7 @@
 import { HttpAgent, fetchCandid, ActorSubclass, Actor } from '@dfinity/agent';
 import { IDL } from '@dfinity/candid';
 
-const DEV_SERVER_URL = 'http://localhost:7000';
+const DEV_SERVER_URL = 'http://localhost:7700';
 
 export interface Canister {
     call(method: string, ...args: any[]): Promise<any>;
