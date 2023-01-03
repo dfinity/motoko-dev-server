@@ -1,24 +1,23 @@
-// TODO: refactor into an npm package
-
 import { Actor, ActorSubclass, HttpAgent, fetchCandid } from '@dfinity/agent';
 import { IDL } from '@dfinity/candid';
-import { Principal } from '@dfinity/candid/lib/cjs/idl';
 
-const DEV_SERVER_URL = 'http://localhost:7700';
+const defaultDevHost = 'http://localhost:7700';
 
 export interface Canister {
     call(method: string, ...args: any[]): Promise<any>;
 }
 export class DevCanister implements Canister {
     public readonly alias: string;
+    public readonly host: string;
 
-    constructor(alias: string) {
+    constructor(alias: string, host: string) {
         this.alias = alias;
+        this.host = host;
     }
 
     async call(method: string, ...args: any[]): Promise<any> {
         const response = await fetch(
-            `${DEV_SERVER_URL}/alias/${this.alias}/${method}`,
+            `${this.host}/alias/${this.alias}/${method}`,
             {
                 method: 'POST',
                 headers: {
@@ -102,8 +101,11 @@ export class ReplicaCanister implements Canister {
     }
 }
 
-export function devCanister(alias: string): DevCanister {
-    return new DevCanister(alias);
+export function devCanister(
+    alias: string,
+    host: string = defaultDevHost,
+): DevCanister {
+    return new DevCanister(alias, host);
 }
 
 export function replicaCanister(
