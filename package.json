@@ -13,7 +13,6 @@
         "build:wasm": "wasm-pack build wasm --target nodejs --out-dir pkg/nodejs",
         "build": "run-s build:wasm build:ts",
         "prepare": "husky install && cd wasm && cargo update",
-        "generate": "node utils/generate",
         "test": "jest",
         "precommit": "lint-staged",
         "prepublishOnly": "run-s build test"
