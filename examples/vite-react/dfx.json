@@ -3,6 +3,14 @@
         "backend": {
             "type": "motoko",
             "main": "backend/Main.mo"
+        },
+        "frontend": {
+            "dependencies": ["backend"],
+            "type": "assets",
+            "frontend": {
+                "entrypoint": "dist/index.html"
+            },
+            "source": ["dist/"]
         }
     }
 }

@@ -1,3 +1,3 @@
-import wasm from "../wasm/pkg/nodejs/wasm";
+import wasm from '../wasm/pkg/nodejs/wasm';
 
 export default wasm;

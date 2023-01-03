@@ -1,7 +1,7 @@
 actor {
-    var counter : Int = 0;
+    var counter /* : Int */ = 0;
 
-    public func get() : async Int {
+    public query func get() : async Int {
         counter;
     };
 
@@ -9,7 +9,7 @@ actor {
         counter += 1;
     };
 
-    public func add(i : Int) {
-        counter += 1; // TODO: support `+= i`
-    };
+    // public func add(i : Int) {
+    //     counter += i;
+    // };
 };

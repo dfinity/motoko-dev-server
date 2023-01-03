@@ -7,8 +7,8 @@ import { findCanister } from '../watch';
 import { IDL } from '@dfinity/candid';
 
 export default (app: express.Application, { delay }: Settings) => {
-    app.post('/alias/:alias([^/]+)/:method', json(), (req, res, next) => {
-        (async () => {
+    app.post('/alias/:alias([^/]+)/:method', json(), async (req, res, next) => {
+        try {
             const { alias, method } = req.params;
             const message = req.body;
 
@@ -21,11 +21,11 @@ export default (app: express.Application, { delay }: Settings) => {
                     .json({ message: '`args` must be an array' });
             }
 
-            // const file = motoko.file();
-
             const canister = findCanister(alias);
             if (!canister) {
-                return res.status(404).json({ alias });
+                return res
+                    .status(400)
+                    .json({ message: `Unknown canister: ${canister}` });
             }
             const candidSource = getVirtualFile(canister.file).candid();
             const candidJs = wasm.candid_to_js(candidSource);
@@ -51,7 +51,6 @@ export default (app: express.Application, { delay }: Settings) => {
                     message: `Unknown canister method: ${alias}.${method}`,
                 });
             }
-            console.log(args, field.argTypes); /////
 
             const candid = IDL.encode(field.argTypes, args);
 
@@ -61,12 +60,14 @@ export default (app: express.Application, { delay }: Settings) => {
                 new Uint8Array(candid),
             );
 
-            console.log('Value:', JSON.stringify(value)); ///
+            console.log('Value:', JSON.stringify(value));
 
             res.json({
                 value,
             });
-        })().catch(next);
+        } catch (err) {
+            next(err);
+        }
     });
 };
 

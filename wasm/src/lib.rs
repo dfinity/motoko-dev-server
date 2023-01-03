@@ -80,9 +80,9 @@ pub fn start() {
 /// Handle a message directed at the IC replica.
 #[wasm_bindgen]
 pub fn handle_message(_alias: String, _method: String, _message: JsValue) -> Result {
-    // let message: Message = from_value(message)?;
-    // let args = candid::decode_args(&message.arg)?;
-    // println!("Candid args: {:?}", args);
+    // let message: Vec<u8> = from_value(message)?;
+    // let args = candid::decode_args(&message)?;
+    // log!("Candid args: {:?}", args);
     // js_return(&candid::encode_one("abc")?)
     unimplemented!()
 }

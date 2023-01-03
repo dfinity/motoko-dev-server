@@ -5,8 +5,11 @@ import createApp from './app';
 import { Settings } from './settings';
 import { watch } from './watch';
 
-const { delay } = program
+const defaultPort = 7700;
+
+const { port, delay } = program
     .argument('[directory]', 'dfx directory')
+    .option('-p, --port', `HTTP port (default: ${defaultPort})`)
     .option('-d, --delay', 'artificial delay')
     .parse()
     .opts();
@@ -20,7 +23,7 @@ if (delay) {
     console.log('Adding artificial delay');
 }
 
-const devServerPort = +process.env.PORT || 7000;
+const devServerPort = +process.env.PORT || port || defaultPort;
 
 const app = createApp(settings);
 const server = createServer(app);

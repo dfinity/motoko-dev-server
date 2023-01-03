@@ -1,15 +1,16 @@
 // TODO: refactor into an npm package
 
-import { HttpAgent, fetchCandid, ActorSubclass, Actor } from '@dfinity/agent';
+import { Actor, ActorSubclass, HttpAgent, fetchCandid } from '@dfinity/agent';
 import { IDL } from '@dfinity/candid';
+import { Principal } from '@dfinity/candid/lib/cjs/idl';
 
-const DEV_SERVER_URL = 'http://localhost:7000';
+const DEV_SERVER_URL = 'http://localhost:7700';
 
 export interface Canister {
     call(method: string, ...args: any[]): Promise<any>;
 }
 export class DevCanister implements Canister {
-    public alias: string;
+    public readonly alias: string;
 
     constructor(alias: string) {
         this.alias = alias;
@@ -45,25 +46,22 @@ export class DevCanister implements Canister {
 }
 
 export class ReplicaCanister implements Canister {
-    public id: string;
-    public agent: HttpAgent;
+    public readonly id: string;
+    public readonly agent: HttpAgent;
 
-    private _candid: IDL.Type | undefined;
+    private _actor: ActorSubclass | undefined;
 
     constructor(id: string, agent: HttpAgent) {
         this.id = id;
         this.agent = agent;
     }
 
-    private async fetchCandid() {
-        if (this._candid) {
-            return this._candid;
+    private async fetchActor() {
+        if (this._actor) {
+            return this._actor;
         }
         const source = await fetchCandid(this.id, this.agent);
-        console.log('candid source:', source); //
-        const candid = this._candid; //
-
-        const didJsCanisterId = 'a4gq6-oaaaa-aaaab-qaa4q-cai';
+        const didJsCanisterId = 'ryjl3-tyaaa-aaaaa-aaaba-cai';
         const didJsInterface: IDL.InterfaceFactory = ({ IDL }) =>
             IDL.Service({
                 did_to_js: IDL.Func([IDL.Text], [IDL.Opt(IDL.Text)], ['query']),
@@ -72,22 +70,35 @@ export class ReplicaCanister implements Canister {
             canisterId: didJsCanisterId,
             agent: this.agent,
         });
-
-        console.log(didJs); ///
-        // const result = didjs.
-
-        this._candid = candid;
-        return candid;
+        const js = ((await didJs.did_to_js(source)) as [string])[0];
+        const candid = await eval(
+            `import("data:text/javascript;charset=utf-8,${encodeURIComponent(
+                js,
+            )}")`,
+        );
+        const actor = Actor.createActor(candid.idlFactory, {
+            agent: this.agent,
+            canisterId: this.id,
+        });
+        this._actor = actor;
+        return actor;
     }
 
     async call(method: string, ...args: any[]): Promise<any> {
-        const candid = await this.fetchCandid();
+        const actor = await this.fetchActor();
+        const result = await actor[method](...args);
 
-        // this.agent.call(this.id, {
-        //     methodName: method,
-        //     // arg: cbor.encode([]), ////
-        //     arg: new ArrayBuffer(0),
-        // });
+        console.log('RESULT:', result); ////
+
+        // Convert to JSON-like object
+        return JSON.parse(
+            JSON.stringify(result, (_key, value) => {
+                if (typeof value === 'bigint') {
+                    return value.toString();
+                }
+                return value;
+            }),
+        );
     }
 }
 
