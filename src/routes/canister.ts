@@ -60,7 +60,7 @@ export default (app: express.Application, { delay }: Settings) => {
                 new Uint8Array(candid),
             );
 
-            console.log('Value:', JSON.stringify(value));
+            console.log('Result:', JSON.stringify(value));
 
             res.json({
                 value,
