@@ -13,10 +13,44 @@ Ensure that you have [Node.js](https://nodejs.org/en/) installed on your system.
 npm i -g mo-dev
 ```
 
-## Usage:
+## Basic Usage:
 
 Run the following command in a directory with a `dfx.json` file:
 
 ```sh
 mo-dev
+```
+
+View the available CLI options by passing the `--help` flag:
+
+```sh
+mo-dev --help
+```
+
+Run `dfx deploy` on file change:
+
+```sh
+mo-dev -c "dfx deploy"
+```
+
+
+## Advanced Usage:
+
+Run on a specified port (default is `7700`):
+
+```sh
+mo-dev -p 7700
+```
+
+Add an artificial delay (similar to the expected latency when deployed on the IC):
+
+```sh
+mo-dev -d
+```
+
+Show additional debug output in the console:
+
+```sh
+mo-dev -v # more verbose
+mo-dev -vv # extra verbose
 ```
