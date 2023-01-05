@@ -1,5 +1,6 @@
-import { Settings } from './settings';
 import { readFileSync } from 'fs';
+import { spawn } from 'child_process';
+import { Settings } from './settings';
 import { DfxConfig, loadDfxConfig } from './dfx';
 import { resolve } from 'path';
 import chokidar from 'chokidar';
@@ -14,7 +15,7 @@ export function findCanister(alias: string): Canister | undefined {
     return canisters.find((c) => c.alias === alias);
 }
 
-export function watch({ directory }: Settings) {
+export function watch({ directory, command }: Settings) {
     const updateDfxConfig = () => {
         try {
             const dfxConfig = loadDfxConfig(directory);
@@ -33,6 +34,26 @@ export function watch({ directory }: Settings) {
         }
     };
     updateDfxConfig();
+
+    let changeTimeout: ReturnType<typeof setTimeout> | undefined;
+    let commandProcess: ReturnType<typeof spawn> | undefined;
+    const notifyChange = () => {
+        clearTimeout(changeTimeout);
+        changeTimeout = setTimeout(() => {
+            if (command) {
+                if (commandProcess) {
+                    commandProcess.kill();
+                }
+                commandProcess = spawn(command, {
+                    shell: true,
+                    cwd: directory,
+                });
+                process.stdin.pipe(commandProcess.stdin);
+                commandProcess.stdout.pipe(process.stdout);
+                commandProcess.stderr.pipe(process.stdout);
+            }
+        }, 100);
+    };
 
     const updateCanister = (canister: Canister) => {
         try {
@@ -63,36 +84,47 @@ export function watch({ directory }: Settings) {
         }
     };
 
-    chokidar.watch('./dfx.json', { cwd: directory }).on('change', (path) => {
-        if (!path.endsWith('dfx.json')) {
-            console.warn('Received unexpected `dfx.json` path:', path);
-            return;
-        }
-        console.log('Updating', path);
-        const previousCanisters = canisters;
-        updateDfxConfig();
-        previousCanisters?.forEach((canister) => {
-            if (!canisters?.some((c) => c.alias === canister.alias)) {
-                removeCanister(canister);
+    const dfxWatcher = chokidar
+        .watch('./dfx.json', { cwd: directory })
+        .on('change', (path) => {
+            if (!path.endsWith('dfx.json')) {
+                console.warn('Received unexpected `dfx.json` path:', path);
+                return;
             }
-        });
-        canisters?.forEach((canister) => {
-            updateCanister(canister);
-        });
-    });
-
-    chokidar.watch('**/*.mo', { cwd: directory }).on('all', (event, path) => {
-        if (!path.endsWith('.mo')) {
-            return;
-        }
-        canisters?.forEach((canister) => {
-            if (resolve(directory, path) === canister.file) {
-                if (path === 'unlink') {
+            notifyChange();
+            console.log('Updating', path);
+            const previousCanisters = canisters;
+            updateDfxConfig();
+            previousCanisters?.forEach((canister) => {
+                if (!canisters?.some((c) => c.alias === canister.alias)) {
                     removeCanister(canister);
-                } else {
-                    updateCanister(canister);
                 }
-            }
+            });
+            canisters?.forEach((canister) => {
+                updateCanister(canister);
+            });
         });
-    });
+
+    const moWatcher = chokidar
+        .watch('**/*.mo', { cwd: directory })
+        .on('all', (event, path) => {
+            if (!path.endsWith('.mo')) {
+                return;
+            }
+            notifyChange();
+            canisters?.forEach((canister) => {
+                if (resolve(directory, path) === canister.file) {
+                    if (path === 'unlink') {
+                        removeCanister(canister);
+                    } else {
+                        updateCanister(canister);
+                    }
+                }
+            });
+        });
+
+    return {
+        dfxJson: dfxWatcher,
+        motoko: moWatcher,
+    };
 }
