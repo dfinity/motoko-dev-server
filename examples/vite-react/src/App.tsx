@@ -3,7 +3,7 @@ import './App.css';
 import motokoLogo from './assets/motoko_moving.png';
 import motokoShadowLogo from './assets/motoko_shadow.png';
 import reactLogo from './assets/react.svg';
-import { devCanister, replicaCanister } from './ic';
+import { devCanister, replicaCanister } from 'ic0';
 
 const backend = import.meta.env.DEV
     ? devCanister('backend')
