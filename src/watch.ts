@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import { spawn } from 'child_process';
+import readline from 'readline';
 import { Settings } from './settings';
 import { DfxConfig, loadDfxConfig } from './dfx';
 import { resolve } from 'path';
@@ -7,21 +8,21 @@ import chokidar from 'chokidar';
 import wasm from './wasm';
 import { getDfxCanisters, Canister } from './canister';
 import { getVirtualFile } from './utils/motoko';
+import pc from 'picocolors';
 
-// let dfxConfig: DfxConfig | undefined;
 let canisters: Canister[] | undefined;
 
 export function findCanister(alias: string): Canister | undefined {
     return canisters.find((c) => c.alias === alias);
 }
 
-export function watch({ directory, command }: Settings) {
+export function watch({ directory, command, verbosity }: Settings) {
     const updateDfxConfig = () => {
         try {
             const dfxConfig = loadDfxConfig(directory);
             if (!dfxConfig) {
                 console.error(
-                    'Could not find a `dfx.json` file in directory:',
+                    pc.red('Could not find a `dfx.json` file in directory:'),
                     directory,
                 );
                 return;
@@ -29,7 +30,11 @@ export function watch({ directory, command }: Settings) {
             canisters = getDfxCanisters(directory, dfxConfig);
         } catch (err) {
             console.error(
-                `Error while loading 'dfx.json' file:\n${err.message || err}`,
+                pc.red(
+                    `Error while loading 'dfx.json' file:\n${
+                        err.message || err
+                    }`,
+                ),
             );
         }
     };
@@ -44,6 +49,9 @@ export function watch({ directory, command }: Settings) {
                 if (commandProcess) {
                     commandProcess.kill();
                 }
+                if (verbosity >= 1) {
+                    console.log(pc.blue(`${pc.bold('run')} ${command}`));
+                }
                 commandProcess = spawn(command, {
                     shell: true,
                     cwd: directory,
@@ -51,6 +59,14 @@ export function watch({ directory, command }: Settings) {
                 process.stdin.pipe(commandProcess.stdin);
                 commandProcess.stdout.pipe(process.stdout);
                 commandProcess.stderr.pipe(process.stdout);
+                // commandProcess.on('exit', (code) => {
+                //     if (verbosity >= 1) {
+                //         console.log(
+                //             pc.dim('Command exited with code'),
+                //             code ? pc.yellow(code) : pc.gray(0),
+                //         );
+                //     }
+                // });
             }
         }, 100);
     };
@@ -63,9 +79,11 @@ export function watch({ directory, command }: Settings) {
             file.write(source);
         } catch (err) {
             console.error(
-                `Error while updating canister '${canister.alias}':\n${
-                    err.message || err
-                }`,
+                pc.red(
+                    `Error while updating canister '${canister.alias}':\n${
+                        err.message || err
+                    }`,
+                ),
             );
         }
     };
@@ -77,9 +95,11 @@ export function watch({ directory, command }: Settings) {
             file.delete();
         } catch (err) {
             console.error(
-                `Error while removing canister '${canister.alias}':\n${
-                    err.message || err
-                }`,
+                pc.red(
+                    `Error while removing canister '${canister.alias}':\n${
+                        err.message || err
+                    }`,
+                ),
             );
         }
     };
@@ -92,7 +112,7 @@ export function watch({ directory, command }: Settings) {
                 return;
             }
             notifyChange();
-            console.log('Updating', path);
+            console.log(pc.green(`${pc.bold('update')} ${path}`));
             const previousCanisters = canisters;
             updateDfxConfig();
             previousCanisters?.forEach((canister) => {
@@ -111,10 +131,13 @@ export function watch({ directory, command }: Settings) {
             if (!path.endsWith('.mo')) {
                 return;
             }
+            if (verbosity >= 2) {
+                console.log(pc.green(`${pc.bold(event)} ${path}`));
+            }
             notifyChange();
             canisters?.forEach((canister) => {
                 if (resolve(directory, path) === canister.file) {
-                    if (path === 'unlink') {
+                    if (event === 'unlink') {
                         removeCanister(canister);
                     } else {
                         updateCanister(canister);
