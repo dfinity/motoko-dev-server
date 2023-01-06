@@ -1,14 +1,13 @@
-import { readFileSync } from 'fs';
 import { spawn } from 'child_process';
-import readline from 'readline';
-import { Settings } from './settings';
-import { DfxConfig, loadDfxConfig } from './dfx';
-import { resolve } from 'path';
 import chokidar from 'chokidar';
-import wasm from './wasm';
-import { getDfxCanisters, Canister } from './canister';
-import { getVirtualFile } from './utils/motoko';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import pc from 'picocolors';
+import { Canister, getDfxCanisters } from './canister';
+import { loadDfxConfig } from './dfx';
+import { Settings } from './settings';
+import { getVirtualFile } from './utils/motoko';
+import wasm from './wasm';
 
 let canisters: Canister[] | undefined;
 
@@ -22,15 +21,18 @@ export function watch({ directory, command, verbosity }: Settings) {
             const dfxConfig = loadDfxConfig(directory);
             if (!dfxConfig) {
                 console.error(
-                    pc.red('Could not find a `dfx.json` file in directory:'),
-                    directory,
+                    pc.magenta(
+                        `${pc.bold(
+                            'Could not find a `dfx.json` file in directory:',
+                        )} ${directory}`,
+                    ),
                 );
                 return;
             }
             canisters = getDfxCanisters(directory, dfxConfig);
         } catch (err) {
             console.error(
-                pc.red(
+                pc.magenta(
                     `Error while loading 'dfx.json' file:\n${
                         err.message || err
                     }`,
@@ -112,7 +114,7 @@ export function watch({ directory, command, verbosity }: Settings) {
                 return;
             }
             notifyChange();
-            console.log(pc.green(`${pc.bold('update')} ${path}`));
+            console.log(pc.magenta(`${pc.bold('change')} ${path}`));
             const previousCanisters = canisters;
             updateDfxConfig();
             previousCanisters?.forEach((canister) => {

@@ -12,10 +12,9 @@ export interface CanisterConfig {
 }
 
 export function loadDfxConfig(directory: string): DfxConfig | undefined {
-    if (!existsSync(directory)) {
+    const dfxPath = resolve(directory, 'dfx.json');
+    if (!existsSync(dfxPath)) {
         return;
     }
-    return <DfxConfig>(
-        JSON.parse(readFileSync(resolve(directory, 'dfx.json'), 'utf8'))
-    );
+    return <DfxConfig>JSON.parse(readFileSync(dfxPath, 'utf8'));
 }
