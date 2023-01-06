@@ -3,14 +3,15 @@ use motoko::{
     vm_types::{Core, Limits},
     Interruption, ToMotoko, Value,
 };
-use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::to_value;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_wasm_bindgen::{from_value, to_value};
 use std::{borrow::Borrow, cell::RefCell};
 use wasm_bindgen::prelude::*;
 
 type Result<T = JsValue, E = JsError> = std::result::Result<T, E>;
 
 thread_local! {
+    static SETTINGS: RefCell<Option<Settings>> = RefCell::new(None);
     static CORE: RefCell<Core> = RefCell::new(Core::empty());
 }
 
@@ -37,10 +38,19 @@ struct LiveCanister {
     source: String,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+struct Settings {
+    verbosity: usize,
+}
+
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console, js_name = log)]
     fn js_log(s: &str);
+}
+
+fn js_input<T: DeserializeOwned>(input: JsValue) -> Result<T> {
+    from_value(input).map_err(|e| JsError::new(&format!("Deserialization error ({:?})", e)))
 }
 
 fn js_return<T: Serialize>(value: &T) -> Result {
@@ -67,14 +77,36 @@ fn motoko_to_js_value(value: &Value) -> Result {
     })
 }
 
+fn with_settings<R>(f: impl FnOnce(&Settings) -> R) -> R {
+    SETTINGS.with(|settings| {
+        f(&mut settings
+            .borrow_mut()
+            .as_ref()
+            .expect("Uninitialized settings"))
+    })
+}
+
 macro_rules! log {
-    ($($input:tt)+) => {js_log(&format!($($input)+))};
+    ($($input:tt)+) => {
+        with_settings(|settings| {
+            if settings.verbosity >= 2 {
+                js_log(&format!($($input)+))
+            }
+        })
+    };
 }
 
 #[wasm_bindgen(start)]
 pub fn start() {
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
+}
+
+#[wasm_bindgen]
+pub fn update_settings(settings: JsValue) -> Result {
+    let settings: Settings = js_input(settings)?;
+    SETTINGS.with(|s| *s.borrow_mut() = Some(settings));
+    Ok(JsValue::TRUE)
 }
 
 /// Handle a message directed at the IC replica.

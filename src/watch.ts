@@ -130,7 +130,7 @@ export function watch({ directory, command, verbosity }: Settings) {
             if (!path.endsWith('.mo')) {
                 return;
             }
-            if (verbosity >= 2) {
+            if (verbosity >= 1) {
                 console.log(pc.green(`${pc.bold(event)} ${path}`));
             }
             notifyChange();
