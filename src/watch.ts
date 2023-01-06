@@ -9,6 +9,9 @@ import { Settings } from './settings';
 import { getVirtualFile } from './utils/motoko';
 import wasm from './wasm';
 
+// Paths to always exclude from the file watcher
+const excludePaths = ['**/node_modules/**/*', '**/.vessel/.tmp/**/*'];
+
 let canisters: Canister[] | undefined;
 
 export function findCanister(alias: string): Canister | undefined {
@@ -21,22 +24,16 @@ export function watch({ directory, command, verbosity }: Settings) {
             const dfxConfig = loadDfxConfig(directory);
             if (!dfxConfig) {
                 console.error(
-                    pc.magenta(
-                        `${pc.bold(
-                            'Could not find a `dfx.json` file in directory:',
-                        )} ${directory}`,
-                    ),
+                    `${pc.bold(
+                        'Could not find a `dfx.json` file in directory:',
+                    )} ${directory}`,
                 );
                 return;
             }
             canisters = getDfxCanisters(directory, dfxConfig);
         } catch (err) {
             console.error(
-                pc.magenta(
-                    `Error while loading 'dfx.json' file:\n${
-                        err.message || err
-                    }`,
-                ),
+                `Error while loading 'dfx.json' file:\n${err.message || err}`,
             );
         }
     };
@@ -107,7 +104,7 @@ export function watch({ directory, command, verbosity }: Settings) {
     };
 
     const dfxWatcher = chokidar
-        .watch('./dfx.json', { cwd: directory })
+        .watch('./dfx.json', { cwd: directory, ignored: excludePaths })
         .on('change', (path) => {
             if (!path.endsWith('dfx.json')) {
                 console.warn('Received unexpected `dfx.json` path:', path);
@@ -128,7 +125,7 @@ export function watch({ directory, command, verbosity }: Settings) {
         });
 
     const moWatcher = chokidar
-        .watch('**/*.mo', { cwd: directory })
+        .watch('**/*.mo', { cwd: directory, ignored: excludePaths })
         .on('all', (event, path) => {
             if (!path.endsWith('.mo')) {
                 return;
