@@ -33,13 +33,13 @@ Run `dfx deploy` on file change:
 mo-dev -c "dfx deploy"
 ```
 
-
 ## Advanced Usage:
 
-Run on a specified port (default is `7700`):
+Show additional debug output in the console:
 
 ```sh
-mo-dev -p 7700
+mo-dev -v # more verbose
+mo-dev -vv # extra verbose
 ```
 
 Add an artificial delay (similar to the expected latency when deployed on the IC):
@@ -48,9 +48,8 @@ Add an artificial delay (similar to the expected latency when deployed on the IC
 mo-dev -d
 ```
 
-Show additional debug output in the console:
+Run on a specified port (default is `7700`):
 
 ```sh
-mo-dev -v # more verbose
-mo-dev -vv # extra verbose
+mo-dev -p 7700
 ```
