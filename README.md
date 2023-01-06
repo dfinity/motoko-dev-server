@@ -5,6 +5,14 @@
 
 ---
 
+`mo-dev` enables fast Motoko canister development in parallel with a front-end web application. 
+
+This server is designed to work with [Vite](https://vitejs.dev/), [Next.js](https://nextjs.org/), [create-react-app](https://create-react-app.dev/), and almost any other front-end development framework via the [`ic0` npm package](https://www.npmjs.com/package/ic0). 
+
+## Quick Start
+
+Check out the [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react/) starter project for an example of how to integrate `mo-dev` into a modern web application.
+
 ## Installation
 
 Ensure that you have [Node.js](https://nodejs.org/en/) `>= 16.x` installed on your system.
@@ -12,10 +20,6 @@ Ensure that you have [Node.js](https://nodejs.org/en/) `>= 16.x` installed on yo
 ```sh
 npm i -g mo-dev
 ```
-
-## Quick Start
-
-Check out the [Vite + React + Motoko](.tree/main/examples/vite-react/) starter project for an example of how to integrate `mo-dev` into a modern web application.
 
 ## Basic Usage
 
@@ -68,3 +72,7 @@ devServer({
     // ...
 });
 ```
+
+---
+
+Since `mo-dev` is early in development, please feel free to report a bug, ask a question, or request a feature on the project's [GitHub issues](https://github.com/dfinity/motoko-dev-server/issues) page. 
