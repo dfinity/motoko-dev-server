@@ -1,19 +1,27 @@
 
-# Motoko Dev Server &nbsp;[![npm version](https://img.shields.io/npm/v/mo-dev.svg?logo=npm)](https://www.npmjs.com/package/mo-dev) [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/dfinity/motoko-dev-server/issues)
+# Motoko Dev Server (`mo-dev`) &nbsp;[![npm version](https://img.shields.io/npm/v/mo-dev.svg?logo=npm)](https://www.npmjs.com/package/mo-dev) [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/dfinity/motoko-dev-server/issues)
 
 > ### A rapid prototyping server for [Motoko](https://smartcontracts.org/) smart contracts.
 
 ---
 
-## Installation:
+## Overview
 
-Ensure that you have [Node.js](https://nodejs.org/en/) installed on your system.
+`mo-dev` is a [live reload development server](https://blog.logrocket.com/complete-guide-full-stack-live-reload/) for building Motoko canisters on the [Internet Computer](https://internetcomputer.org/). 
+
+## Installation
+
+Ensure that you have [Node.js](https://nodejs.org/en/) `>= 16.x` installed on your system.
 
 ```sh
 npm i -g mo-dev
 ```
 
-## Basic Usage:
+## Quick Start
+
+Check out the [Vite + React + Motoko](.tree/main/examples/vite-react/) starter project for an example of how to integrate `mo-dev` into a modern web application.
+
+## Basic Usage
 
 Run the following command in a directory with a `dfx.json` file:
 
@@ -21,19 +29,19 @@ Run the following command in a directory with a `dfx.json` file:
 mo-dev
 ```
 
-View the available CLI options by passing the `--help` flag:
+View the available command-line options by passing the `--help` flag:
 
 ```sh
 mo-dev --help
 ```
 
-Run `dfx deploy` on file change:
+Automatically redeploy your dapp on Motoko file changes using the following command:
 
 ```sh
 mo-dev -c "dfx deploy"
 ```
 
-## Advanced Usage:
+## Advanced Usage
 
 Show additional debug output in the console:
 
