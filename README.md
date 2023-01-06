@@ -42,16 +42,16 @@ mo-dev -v # more verbose
 mo-dev -vv # extra verbose
 ```
 
-Add an artificial delay (similar to the expected latency when deployed on the IC):
-
-```sh
-mo-dev -d
-```
-
 Run on a specified port (default is `7700`):
 
 ```sh
 mo-dev -p 7700
+```
+
+Add an artificial delay to simulate message latency on the IC:
+
+```sh
+mo-dev -d
 ```
 
 Programmatically start the development server from a JS environment:
