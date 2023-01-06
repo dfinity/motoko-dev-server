@@ -35,7 +35,13 @@ View the available command-line options by passing the `--help` flag:
 mo-dev --help
 ```
 
-If you want to automatically redeploy your project upon detecting a Motoko file change, pass a command using the `-c` or `--command` flag. For example:
+Regenerate type declarations upon detecting a Motoko file change:
+
+```sh
+mo-dev --command "dfx generate"
+```
+
+Redeploy your project upon detecting a Motoko file change:
 
 ```sh
 mo-dev --command "dfx deploy"
