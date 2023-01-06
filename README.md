@@ -53,3 +53,14 @@ Run on a specified port (default is `7700`):
 ```sh
 mo-dev -p 7700
 ```
+
+Programmatically start the development server from a JS environment:
+
+```ts
+import devServer from 'mo-dev';
+
+devServer({
+    verbosity: 1,
+    // ...
+});
+```
