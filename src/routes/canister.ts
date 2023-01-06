@@ -7,7 +7,7 @@ import { findCanister } from '../watch';
 import { IDL } from '@dfinity/candid';
 
 export default (app: express.Application, { delay }: Settings) => {
-    app.post('/alias/:alias([^/]+)/:method', json(), async (req, res, next) => {
+    app.post('/call/:alias([^/]+)/:method', json(), async (req, res, next) => {
         try {
             const { alias, method } = req.params;
             const message = req.body;
