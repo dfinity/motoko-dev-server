@@ -1,3 +1,7 @@
 node_modules/
 
 /lib
+
+.dfx
+.vessel
+.mops
