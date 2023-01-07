@@ -24,7 +24,7 @@ export function watch({
     verbosity,
     generate,
     deploy,
-    live,
+    hotReload,
 }: Settings) {
     const updateDfxConfig = () => {
         try {
@@ -130,7 +130,7 @@ export function watch({
 
     const updateCanister = (canister: Canister) => {
         try {
-            if (live) {
+            if (hotReload) {
                 const source = readFileSync(canister.file, 'utf8');
                 wasm.update_canister(canister.file, canister.alias, source);
                 const file = getVirtualFile(canister.file);

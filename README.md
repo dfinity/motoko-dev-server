@@ -51,12 +51,6 @@ mo-dev --exec 'npm run my-reload-script'
 
 ## Advanced Usage
 
-Enable the experimental [Motoko VM](https://github.com/dfinity/motoko.rs) hot module reload server (`--live` or `-l`):
-
-```sh
-mo-dev --live
-```
-
 Show additional debug output in the console (`--verbose` or `-v`):
 
 ```sh
@@ -64,13 +58,7 @@ mo-dev -v # more verbose
 mo-dev -vv # extra verbose
 ```
 
-Run on a specified port (`--port` or `-p`; default is `7700`):
-
-```sh
-mo-dev --port 7700
-```
-
-Programmatically start the development server using JavaScript:
+Programmatically start `mo-dev` using JavaScript:
 
 ```js
 import devServer from 'mo-dev';
@@ -87,9 +75,22 @@ devServer({
 });
 ```
 
-## Motoko VM (Experimental)
+## Experimental Features
 
-Passing the `--live` flag to `mo-dev` exposes an experimental "hot module reload" REST API which can be called using the [`ic0`](https://www.npmjs.com/package/ic0) npm package. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.
+
+Enable the experimental [Motoko VM](https://github.com/dfinity/motoko.rs) hot module reload (HMR) server (`--hot-reload`, `-r`):
+
+```sh
+mo-dev --hot-reload
+```
+
+Run the Motoko VM server on a specified port (`--port` or `-p`; default is `7700`):
+
+```sh
+mo-dev --port 7700
+```
+
+This server exposes a REST API which can be called using the [`ic0`](https://www.npmjs.com/package/ic0) npm package. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.
 
 For most use cases, [`ic0`](https://www.npmjs.com/package/ic0) is the simplest way to interact with the Motoko VM from a JavaScript environment:
 

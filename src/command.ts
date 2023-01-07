@@ -6,7 +6,7 @@ import devServer from '.';
 let verbosity = defaultSettings.verbosity;
 const increaseVerbosity = () => verbosity++;
 
-const { version, port, delay, exec, generate, deploy, live } = program
+const { version, port, delay, exec, generate, deploy, hotReload } = program
     .argument('[directory]', 'dfx directory')
     .option('-V, --version', `view installed version`)
     .option('-p, --port <port>', `HTTP port (default: ${defaultSettings.port})`)
@@ -15,7 +15,7 @@ const { version, port, delay, exec, generate, deploy, live } = program
     .option('-v, --verbose', `increase log level`, increaseVerbosity)
     .option('-g, --generate', `run \`dfx generate\` on changed canister`)
     .option('-d, --deploy', `run \`dfx deploy\` on changed canister`)
-    .option('-l, --live', `use Motoko VM for live reloading (experimental)`)
+    .option('-r, --hot-reload', `hot module reload server (experimental)`)
     .parse()
     .opts();
 
@@ -32,7 +32,7 @@ const settings: Settings = {
     verbosity,
     generate: !!generate || defaultSettings.generate,
     deploy: !!deploy || defaultSettings.deploy,
-    live: !!live || defaultSettings.live,
+    hotReload: !!hotReload || defaultSettings.hotReload,
 };
 
 devServer(settings);
