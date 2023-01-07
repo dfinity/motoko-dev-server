@@ -15,41 +15,35 @@ Ensure that you have [Node.js](https://nodejs.org/en/) `>= 16.x` installed on yo
 npm i -g mo-dev
 ```
 
-Navigate to a directory containing a `dfx.json` file. Try running this command to automatically redeploy your Motoko canisters whenever a change is detected:
-
-```sh
-mo-dev --deploy
-```
-
-Check out the [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react/) starter project for an example of how to integrate `mo-dev` into a modern full-stack webapp.
-
-## Basic Usage
-
 View the available command-line options by passing the `--help` flag:
 
 ```sh
 mo-dev --help
 ```
 
-Regenerate type declarations upon detecting a Motoko file change (`--generate` or `-g`):
+Check out the [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react/) starter project for an example of how to integrate `mo-dev` into a modern full-stack webapp.
+
+## Basic Features
+
+Regenerate type declarations on Motoko file change (`--generate` or `-g`):
 
 ```sh
 mo-dev --generate
 ```
 
-Redeploy canisters upon detecting a Motoko file change (`--deploy` or `-d`):
+Redeploy canisters on Motoko file change (`--deploy` or `-d`):
 
 ```sh
 mo-dev --deploy
 ```
 
-Run an arbitrary command upon detecting a Motoko file change (`--exec` or `-x`):
+Run an arbitrary command on Motoko file change (`--exec` or `-x`):
 
 ```sh
 mo-dev --exec 'npm run my-reload-script'
 ```
 
-## Advanced Usage
+## Advanced Features
 
 Show additional debug output in the console (`--verbose` or `-v`):
 
@@ -75,7 +69,7 @@ devServer({
 });
 ```
 
-## Experimental Usage
+## Experimental Features
 
 Enable the [Motoko VM](https://github.com/dfinity/motoko.rs) hot module reload (HMR) server (`--hot-reload`, `-r`):
 
@@ -83,13 +77,13 @@ Enable the [Motoko VM](https://github.com/dfinity/motoko.rs) hot module reload (
 mo-dev --hot-reload
 ```
 
-Run the Motoko VM server on a specified port (`--port` or `-p`; default is `7700`):
+Run the HMR server on a specified port (`--port` or `-p`; default is `7700`):
 
 ```sh
 mo-dev --port 7700
 ```
 
-This server exposes a REST API which can be called using the [`ic0`](https://www.npmjs.com/package/ic0) npm package. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.
+Hot module reloading makes it possible to preserve a Motoko actor's state between code changes. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.
 
 For most use cases, [`ic0`](https://www.npmjs.com/package/ic0) is the simplest way to try this feature in a JavaScript environment:
 
@@ -112,7 +106,7 @@ If you want to immediately run the new `echo` method without redeploying the can
 POST http://localhost:7700/call/{dfx_canister_alias}/{method}
 ```
 
-Here is what you would use for our specific example:
+For our specific example:
 
 ```
 POST http://localhost:7700/call/backend/echo
