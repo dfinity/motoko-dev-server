@@ -27,9 +27,9 @@ export default defineConfig({
             //             .toUpperCase()}_CANISTER_ID`,
             //         JSON.stringify(process.env[key]),
             //     ]),
-            Object.entries(canisterIds).map(([name, id]) => [
+            Object.entries(canisterIds).map(([name, ids]) => [
                 `process.env.${name.toUpperCase()}_CANISTER_ID`,
-                JSON.stringify(id),
+                JSON.stringify(ids[process.env.DFX_NETWORK] || ids['local']),
             ]),
         ),
     },
