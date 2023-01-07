@@ -5,29 +5,25 @@
 
 ---
 
-`mo-dev` enables fast Motoko canister development in parallel with a front-end web application. 
-
-This command-line tool exposes a canister REST API callable from [Vite](https://vitejs.dev/), [Next.js](https://nextjs.org/), [create-react-app](https://create-react-app.dev/), and almost any other live reloading development framework via the [`ic0`](https://www.npmjs.com/package/ic0) npm package. 
+`mo-dev` is a flexible command-line tool for speeding up your Motoko development workflow. 
 
 ## Quick Start
 
-Check out the [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react/) starter project for an example of how to integrate `mo-dev` into a modern web application.
-
-## Installation
-
-Ensure that you have [Node.js](https://nodejs.org/en/) `>= 16.x` installed on your system.
+Ensure that you have [Node.js](https://nodejs.org/en/) `>= 16.x` installed on your system, and then run the following command:
 
 ```sh
 npm i -g mo-dev
 ```
 
-## Basic Usage
-
-Run the following command in a directory with a `dfx.json` file:
+Navigate to a directory containing a `dfx.json` file. Try running this command to automatically redeploy your Motoko canisters whenever a change is detected:
 
 ```sh
-mo-dev
+mo-dev --deploy
 ```
+
+Check out the [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react/) starter project for an example of how to integrate `mo-dev` into a modern full-stack webapp.
+
+## Basic Usage
 
 View the available command-line options by passing the `--help` flag:
 
@@ -50,12 +46,12 @@ mo-dev --deploy
 Run an arbitrary command upon detecting a Motoko file change (`--exec` or `-x`):
 
 ```sh
-mo-dev --exec 'npm run reload'
+mo-dev --exec 'npm run my-reload-script'
 ```
 
 ## Advanced Usage
 
-Enable the experimental Motoko VM live reload server (`--live` or `-l`):
+Enable the experimental [Motoko VM](https://github.com/dfinity/motoko.rs) hot module reload server (`--live` or `-l`):
 
 ```sh
 mo-dev --live
@@ -71,7 +67,7 @@ mo-dev -vv # extra verbose
 Run on a specified port (`--port` or `-p`; default is `7700`):
 
 ```sh
-mo-dev -p 7700
+mo-dev --port 7700
 ```
 
 Programmatically start the development server using JavaScript:
@@ -91,9 +87,11 @@ devServer({
 });
 ```
 
-## Web Development
+## Motoko VM (Experimental)
 
-For most use cases, the [`ic0`](https://www.npmjs.com/package/ic0) npm package is the simplest way to interact with the Dev Server from a front-end web application:
+Passing the `--live` flag to `mo-dev` exposes an experimental "hot module reload" REST API which can be called using the [`ic0`](https://www.npmjs.com/package/ic0) npm package. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.
+
+For most use cases, [`ic0`](https://www.npmjs.com/package/ic0) is the simplest way to interact with the Motoko VM from a JavaScript environment:
 
 ```js
 import { devCanister } from 'ic0';
@@ -104,9 +102,7 @@ const result = backend.call('echo', 123); // Call the `echo` method with 123 as 
 console.log(result); // => 123
 ```
 
-## REST API
-
-If you are unable to use `ic0` in your environment or want lower-level access to the Dev Server's functionality, the following example illustrates how you can call a Motoko canister via the REST API. 
+If you are using a different programming language or want lower-level access to this functionality, the following example illustrates how you can interact with a Motoko VM canister using the REST API. 
 
 Let's say that you have a Motoko actor named `"backend"` in your `dfx.json` file, and you just added a method named `echo` to this actor. Calling `echo(x)` will return the original input value `x`.
 
