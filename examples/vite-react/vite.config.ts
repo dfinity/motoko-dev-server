@@ -11,6 +11,9 @@ if (!existsSync(canisterIdPath)) {
 }
 const canisterIds = JSON.parse(readFileSync(canisterIdPath, 'utf8'));
 
+const defaultNetwork = 'local';
+const network = process.env['DFX_NETWORK'] || defaultNetwork;
+
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [react()],
@@ -29,8 +32,16 @@ export default defineConfig({
             //     ]),
             Object.entries(canisterIds).map(([name, ids]) => [
                 `process.env.${name.toUpperCase()}_CANISTER_ID`,
-                JSON.stringify(ids[process.env.DFX_NETWORK] || ids['local']),
+                JSON.stringify(ids[network] || ids[defaultNetwork]),
             ]),
         ),
+    },
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:4943',
+                // changeOrigin: true,
+            },
+        },
     },
 });
