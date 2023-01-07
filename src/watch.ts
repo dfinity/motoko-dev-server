@@ -24,6 +24,7 @@ export function watch({
     verbosity,
     generate,
     deploy,
+    live,
 }: Settings) {
     const updateDfxConfig = () => {
         try {
@@ -45,10 +46,13 @@ export function watch({
     };
     updateDfxConfig();
 
-    const runCommand = (command: string, args: string[] = undefined) => {
+    const runCommand = (
+        command: string,
+        { args, pipe }: { args?: string[]; pipe?: boolean } = {},
+    ) => {
         if (verbosity >= 1) {
             console.log(
-                pc.blue(
+                pc.magenta(
                     `${pc.bold('run')} ${
                         args
                             ? `${command} [${args
@@ -63,9 +67,18 @@ export function watch({
             shell: !args,
             cwd: directory,
         });
-        process.stdin.pipe(commandProcess.stdin);
-        commandProcess.stdout.pipe(process.stdout);
-        commandProcess.stderr.pipe(process.stdout);
+        if (pipe) {
+            process.stdin.pipe(commandProcess.stdin);
+            commandProcess.stdout.pipe(process.stdout);
+            commandProcess.stderr.pipe(process.stderr);
+        } else {
+            commandProcess.on('exit', (code) => {
+                if (code) {
+                    commandProcess.stdout.pipe(process.stdout);
+                    commandProcess.stderr.pipe(process.stderr);
+                }
+            });
+        }
         return commandProcess;
     };
 
@@ -78,7 +91,7 @@ export function watch({
                 if (execProcess) {
                     execProcess.kill();
                 }
-                execProcess = runCommand(execute);
+                execProcess = runCommand(execute, { pipe: true });
                 // commandProcess.on('exit', (code) => {
                 //     if (verbosity >= 1) {
                 //         console.log(
@@ -89,13 +102,31 @@ export function watch({
                 // });
             }
 
+            const time = new Date()
+                .toTimeString()
+                .replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
+
+            // TODO: only run for relevant canisters
             canisters.forEach((canister) => {
-                // TODO: only run for relevant canisters
+                console.log(
+                    pc.green(
+                        `${pc.gray(time)} ${pc.bold('update')} ${
+                            canister.alias
+                        }`,
+                    ),
+                );
+                const pipe = verbosity >= 1;
                 if (generate) {
-                    runCommand('dfx', ['generate', '-q', canister.alias]);
+                    runCommand('dfx', {
+                        args: ['generate', '-q', canister.alias],
+                        pipe,
+                    });
                 }
                 if (deploy) {
-                    runCommand('dfx', ['deploy', '-qy', canister.alias]);
+                    runCommand('dfx', {
+                        args: ['deploy', '-qy', canister.alias],
+                        pipe,
+                    });
                 }
             });
         }, 100);
@@ -103,10 +134,12 @@ export function watch({
 
     const updateCanister = (canister: Canister) => {
         try {
-            const source = readFileSync(canister.file, 'utf8');
-            wasm.update_canister(canister.file, canister.alias, source);
-            const file = getVirtualFile(canister.file);
-            file.write(source);
+            if (live) {
+                const source = readFileSync(canister.file, 'utf8');
+                wasm.update_canister(canister.file, canister.alias, source);
+                const file = getVirtualFile(canister.file);
+                file.write(source);
+            }
         } catch (err) {
             console.error(
                 pc.red(
@@ -144,7 +177,7 @@ export function watch({
                 return;
             }
             notifyChange();
-            console.log(pc.magenta(`${pc.bold('change')} ${path}`));
+            console.log(pc.blue(`${pc.bold('change')} ${path}`));
             const previousCanisters = canisters;
             updateDfxConfig();
             previousCanisters?.forEach((canister) => {
@@ -164,7 +197,7 @@ export function watch({
                 return;
             }
             if (verbosity >= 1) {
-                console.log(pc.green(`${pc.bold(event)} ${path}`));
+                console.log(pc.blue(`${pc.bold(event)} ${path}`));
             }
             notifyChange();
             canisters?.forEach((canister) => {
