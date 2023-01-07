@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Canisters
+/src/declarations
+.dfx
+.vessel
+.mops

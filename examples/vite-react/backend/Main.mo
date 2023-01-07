@@ -1,15 +1,18 @@
 actor {
-    var counter /* : Int */ = 0;
+    stable var counter = 0;
 
-    public query func get() : async Int {
+    // Get the current count
+    public query func get() : async Nat {
         counter;
     };
 
+    // Increment the count by one
     public func inc() {
         counter += 1;
     };
 
-    // public func add(i : Int) {
-    //     counter += i;
-    // };
+    // Add `n` to the current count
+    public func add(n : Nat) {
+        counter += n;
+    };
 };

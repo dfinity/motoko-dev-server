@@ -1,4 +1,9 @@
 {
+    "defaults": {
+        "build": {
+            "packtool": "npm run --silent sources"
+        }
+    },
     "canisters": {
         "backend": {
             "type": "motoko",
