@@ -102,18 +102,14 @@ export function watch({
                 // });
             }
 
-            const time = new Date()
-                .toTimeString()
-                .replace(/.*(\d{2}:\d{2}:\d{2}).*/, '$1');
+            const time = new Date().toLocaleTimeString();
 
             // TODO: only run for relevant canisters
             canisters.forEach((canister) => {
                 console.log(
-                    pc.green(
-                        `${pc.gray(time)} ${pc.bold('update')} ${
-                            canister.alias
-                        }`,
-                    ),
+                    `${pc.dim(time)} ${pc.cyan(pc.bold('[mo-dev]'))} ${pc.green(
+                        'update',
+                    )} ${pc.gray(canister.alias)}`,
                 );
                 const pipe = verbosity >= 1;
                 if (generate) {
@@ -167,7 +163,7 @@ export function watch({
         }
     };
 
-    console.log(pc.gray('Waiting for Motoko file changes...'));
+    // console.log(pc.gray('Waiting for Motoko file changes...'));
 
     const dfxWatcher = chokidar
         .watch('./dfx.json', { cwd: directory, ignored: excludePaths })
