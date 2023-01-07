@@ -18,8 +18,6 @@ const { port, delay, exec, generate, deploy, live } = program
     .parse()
     .opts();
 
-console.log('LIVE:', live);////
-
 const settings: Settings = {
     directory: resolve(process.cwd(), program.args[0] || '.'),
     port: port ? +port : defaultSettings.port,
