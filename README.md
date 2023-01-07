@@ -75,10 +75,9 @@ devServer({
 });
 ```
 
-## Experimental Features
+## Experimental Usage
 
-
-Enable the experimental [Motoko VM](https://github.com/dfinity/motoko.rs) hot module reload (HMR) server (`--hot-reload`, `-r`):
+Enable the [Motoko VM](https://github.com/dfinity/motoko.rs) hot module reload (HMR) server (`--hot-reload`, `-r`):
 
 ```sh
 mo-dev --hot-reload
@@ -92,7 +91,7 @@ mo-dev --port 7700
 
 This server exposes a REST API which can be called using the [`ic0`](https://www.npmjs.com/package/ic0) npm package. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.
 
-For most use cases, [`ic0`](https://www.npmjs.com/package/ic0) is the simplest way to interact with the Motoko VM from a JavaScript environment:
+For most use cases, [`ic0`](https://www.npmjs.com/package/ic0) is the simplest way to try this feature in a JavaScript environment:
 
 ```js
 import { devCanister } from 'ic0';
