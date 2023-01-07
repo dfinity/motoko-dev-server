@@ -1,6 +1,6 @@
 {
     "name": "mo-dev",
-    "version": "0.0.7",
+    "version": "0.1.0",
     "description": "A rapid prototyping server for developing Motoko smart contracts.",
     "author": "Ryan Vandersmith (https://github.com/rvanasa)",
     "license": "Apache-2.0",
