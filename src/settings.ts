@@ -4,6 +4,9 @@ export interface Settings {
     delay: boolean;
     execute: string;
     verbosity: number;
+    generate: boolean;
+    deploy: boolean;
+    live: boolean;
 }
 
 export const defaultSettings: Settings = {
@@ -12,4 +15,7 @@ export const defaultSettings: Settings = {
     delay: false,
     execute: '',
     verbosity: 0,
+    generate: false,
+    deploy: false,
+    live: false,
 };

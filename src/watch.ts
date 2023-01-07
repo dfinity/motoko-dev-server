@@ -18,7 +18,13 @@ export function findCanister(alias: string): Canister | undefined {
     return canisters.find((c) => c.alias === alias);
 }
 
-export function watch({ directory, execute: command, verbosity }: Settings) {
+export function watch({
+    directory,
+    execute,
+    verbosity,
+    generate,
+    deploy,
+}: Settings) {
     const updateDfxConfig = () => {
         try {
             const dfxConfig = loadDfxConfig(directory);
@@ -39,25 +45,30 @@ export function watch({ directory, execute: command, verbosity }: Settings) {
     };
     updateDfxConfig();
 
+    const runCommand = (command: string) => {
+        if (verbosity >= 1) {
+            console.log(pc.blue(`${pc.bold('run')} ${command}`));
+        }
+        const commandProcess = spawn(command, {
+            shell: true,
+            cwd: directory,
+        });
+        process.stdin.pipe(commandProcess.stdin);
+        commandProcess.stdout.pipe(process.stdout);
+        commandProcess.stderr.pipe(process.stdout);
+        return commandProcess;
+    };
+
     let changeTimeout: ReturnType<typeof setTimeout> | undefined;
-    let commandProcess: ReturnType<typeof spawn> | undefined;
+    let execProcess: ReturnType<typeof spawn> | undefined;
     const notifyChange = () => {
         clearTimeout(changeTimeout);
         changeTimeout = setTimeout(() => {
-            if (command) {
-                if (commandProcess) {
-                    commandProcess.kill();
+            if (execute) {
+                if (execProcess) {
+                    execProcess.kill();
                 }
-                if (verbosity >= 1) {
-                    console.log(pc.blue(`${pc.bold('run')} ${command}`));
-                }
-                commandProcess = spawn(command, {
-                    shell: true,
-                    cwd: directory,
-                });
-                process.stdin.pipe(commandProcess.stdin);
-                commandProcess.stdout.pipe(process.stdout);
-                commandProcess.stderr.pipe(process.stdout);
+                execProcess = runCommand(execute);
                 // commandProcess.on('exit', (code) => {
                 //     if (verbosity >= 1) {
                 //         console.log(
@@ -66,8 +77,18 @@ export function watch({ directory, execute: command, verbosity }: Settings) {
                 //         );
                 //     }
                 // });
+
+                canisters.forEach((canister) => {
+                    // TODO: only run for relevant canisters
+                    if (generate) {
+                        runCommand(`dfx generate -q ${canister}`);
+                    }
+                    if (deploy) {
+                        runCommand(`dfx deploy -qy ${canister}`);
+                    }
+                });
             }
-        }, 500);
+        }, 100);
     };
 
     const updateCanister = (canister: Canister) => {

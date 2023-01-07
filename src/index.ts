@@ -25,7 +25,7 @@ export default function devServer(options: Partial<Settings> = {}) {
     }
 
     return {
-        server: serve(settings),
+        server: settings.live ? serve(settings) : null,
         watch: watch(settings),
     };
 }

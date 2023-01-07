@@ -14,7 +14,7 @@ export function serve(settings: Settings) {
     const server = createServer(app);
 
     server.listen(devServerPort);
-    console.log(`Listening on port ${pc.bold(devServerPort)}`);
+    console.log(`Motoko VM listening on port ${pc.bold(devServerPort)}`);
 
     return server;
 }

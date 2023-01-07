@@ -35,37 +35,43 @@ View the available command-line options by passing the `--help` flag:
 mo-dev --help
 ```
 
-Regenerate type declarations upon detecting a Motoko file change:
+Regenerate type declarations upon detecting a Motoko file change (`--generate` or `-g`):
 
 ```sh
-mo-dev --exec "dfx generate"
+mo-dev --generate
 ```
 
-Redeploy your project upon detecting a Motoko file change:
+Redeploy canisters upon detecting a Motoko file change (`--deploy` or `-d`):
 
 ```sh
-mo-dev --exec "dfx deploy"
+mo-dev --deploy
+```
+
+Run an arbitrary command upon detecting a Motoko file change (`--exec` or `-x`):
+
+```sh
+mo-dev --exec 'npm run reload'
 ```
 
 ## Advanced Usage
 
-Show additional debug output in the console (`-v` or `--verbose`):
+Enable the experimental Motoko VM live reload server (`--live` or `-l`):
+
+```sh
+mo-dev --live
+```
+
+Show additional debug output in the console (`--verbose` or `-v`):
 
 ```sh
 mo-dev -v # more verbose
 mo-dev -vv # extra verbose
 ```
 
-Run on a specified port (`-p` or `--port`; default is `7700`):
+Run on a specified port (`--port` or `-p`; default is `7700`):
 
 ```sh
 mo-dev -p 7700
-```
-
-Add an artificial delay to simulate message latency on the IC (`-d` or `--delay`):
-
-```sh
-mo-dev -d
 ```
 
 Programmatically start the development server using JavaScript:
@@ -80,9 +86,8 @@ devServer();
 devServer({
     directory: '.',
     port: 7700,
-    delay: false,
-    command: '',
     verbosity: 0,
+    // ...
 });
 ```
 
