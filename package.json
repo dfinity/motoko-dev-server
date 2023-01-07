@@ -1,6 +1,6 @@
 {
     "name": "mo-dev",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "description": "A live reload development server for Motoko smart contracts.",
     "author": "Ryan Vandersmith (https://github.com/rvanasa)",
     "license": "Apache-2.0",
