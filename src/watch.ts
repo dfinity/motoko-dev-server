@@ -18,7 +18,7 @@ export function findCanister(alias: string): Canister | undefined {
     return canisters.find((c) => c.alias === alias);
 }
 
-export function watch({ directory, command, verbosity }: Settings) {
+export function watch({ directory, execute: command, verbosity }: Settings) {
     const updateDfxConfig = () => {
         try {
             const dfxConfig = loadDfxConfig(directory);
@@ -67,7 +67,7 @@ export function watch({ directory, command, verbosity }: Settings) {
                 //     }
                 // });
             }
-        }, 100);
+        }, 500);
     };
 
     const updateCanister = (canister: Canister) => {

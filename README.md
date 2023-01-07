@@ -38,13 +38,13 @@ mo-dev --help
 Regenerate type declarations upon detecting a Motoko file change:
 
 ```sh
-mo-dev --command "dfx generate"
+mo-dev --exec "dfx generate"
 ```
 
 Redeploy your project upon detecting a Motoko file change:
 
 ```sh
-mo-dev --command "dfx deploy"
+mo-dev --exec "dfx deploy"
 ```
 
 ## Advanced Usage
