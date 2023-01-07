@@ -16,7 +16,7 @@ npm start # Start the development server
 
 When ready, run `dfx deploy` to fully build and deploy your application.
 
-## Advanced Usage
+## Multiple Terminals
 
 If you want to separate the Vite and Motoko console outputs, consider running each of the following commands in a separate terminal:
 
