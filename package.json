@@ -83,6 +83,7 @@
         "wasm/pkg/**/*"
     ],
     "keywords": [
+        "cli",
         "motoko",
         "language",
         "programming-language",
