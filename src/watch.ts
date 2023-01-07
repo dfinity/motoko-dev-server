@@ -45,12 +45,22 @@ export function watch({
     };
     updateDfxConfig();
 
-    const runCommand = (command: string) => {
+    const runCommand = (command: string, args: string[] = undefined) => {
         if (verbosity >= 1) {
-            console.log(pc.blue(`${pc.bold('run')} ${command}`));
+            console.log(
+                pc.blue(
+                    `${pc.bold('run')} ${
+                        args
+                            ? `${command} [${args
+                                  .map((arg) => `'${arg}'`)
+                                  .join(', ')}]`
+                            : command
+                    }`,
+                ),
+            );
         }
-        const commandProcess = spawn(command, {
-            shell: true,
+        const commandProcess = spawn(command, args, {
+            shell: !args,
             cwd: directory,
         });
         process.stdin.pipe(commandProcess.stdin);
@@ -77,17 +87,17 @@ export function watch({
                 //         );
                 //     }
                 // });
-
-                canisters.forEach((canister) => {
-                    // TODO: only run for relevant canisters
-                    if (generate) {
-                        runCommand(`dfx generate -q ${canister}`);
-                    }
-                    if (deploy) {
-                        runCommand(`dfx deploy -qy ${canister}`);
-                    }
-                });
             }
+
+            canisters.forEach((canister) => {
+                // TODO: only run for relevant canisters
+                if (generate) {
+                    runCommand('dfx', ['generate', '-q', canister.alias]);
+                }
+                if (deploy) {
+                    runCommand('dfx', ['deploy', '-qy', canister.alias]);
+                }
+            });
         }, 100);
     };
 
@@ -123,6 +133,8 @@ export function watch({
             );
         }
     };
+
+    console.log(pc.gray('Waiting for Motoko file changes...'));
 
     const dfxWatcher = chokidar
         .watch('./dfx.json', { cwd: directory, ignored: excludePaths })
