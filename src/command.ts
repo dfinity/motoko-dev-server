@@ -6,8 +6,9 @@ import devServer from '.';
 let verbosity = defaultSettings.verbosity;
 const increaseVerbosity = () => verbosity++;
 
-const { port, delay, exec, generate, deploy, live } = program
+const { version, port, delay, exec, generate, deploy, live } = program
     .argument('[directory]', 'dfx directory')
+    .option('-V, --version', `view installed version`)
     .option('-p, --port <port>', `HTTP port (default: ${defaultSettings.port})`)
     // .option('-a, --artificial-delay', 'artificial delay')
     .option('-x, --exec <exec>', `execute command on file change`)
@@ -17,6 +18,11 @@ const { port, delay, exec, generate, deploy, live } = program
     .option('-l, --live', `use Motoko VM for live reloading (experimental)`)
     .parse()
     .opts();
+
+if (version) {
+    console.log('mo-dev', require('../package.json').version);
+    process.exit(0);
+}
 
 const settings: Settings = {
     directory: resolve(process.cwd(), program.args[0] || '.'),
