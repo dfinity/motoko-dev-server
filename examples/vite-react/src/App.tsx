@@ -12,10 +12,13 @@ function App() {
     // Get the current counter value
     const fetchCount = async () => {
         try {
+            setLoading(true);
             const count = await backend.get();
-            setCount(+count.toString());
+            setCount(+count.toString()); // Convert BigInt to number
         } catch (err) {
             console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -24,9 +27,6 @@ function App() {
         try {
             setLoading(true);
             await backend.inc(); // Increment the count by 1
-            if (count !== undefined) {
-                setCount(count + 1); // Optimistic rendering
-            }
             await fetchCount(); // Fetch the new count
         } finally {
             setLoading(false);
@@ -55,22 +55,23 @@ function App() {
                         alt="React logo"
                     />
                 </a>
-                <div className="logo-stack">
-                    <a href="https://smartcontracts.org" target="_blank">
+                <a
+                    href="https://internetcomputer.org/docs/current/developer-docs/build/cdks/motoko-dfinity/motoko/"
+                    target="_blank"
+                >
+                    <span className="logo-stack">
                         <img
                             src={motokoShadowLogo}
                             className="logo motoko-shadow"
                             alt="Motoko logo"
                         />
-                    </a>
-                    <a href="https://smartcontracts.org" target="_blank">
                         <img
                             src={motokoLogo}
                             className="logo motoko"
                             alt="Motoko logo"
                         />
-                    </a>
-                </div>
+                    </span>
+                </a>
             </div>
             <h1>Vite + React + Motoko</h1>
             <div className="card">
