@@ -86,6 +86,10 @@ export function watch({
         return commandProcess;
     };
 
+    const finishProcess = async (process: ReturnType<typeof spawn>) => {
+        return new Promise((resolve) => process.on('exit', resolve));
+    };
+
     let changeTimeout: ReturnType<typeof setTimeout> | undefined;
     let execProcess: ReturnType<typeof spawn> | undefined;
     const notifyChange = () => {
@@ -109,26 +113,32 @@ export function watch({
             const time = new Date().toLocaleTimeString();
 
             // TODO: only run for relevant canisters
-            canisters.forEach((canister) => {
-                console.log(
-                    `${pc.dim(time)} ${pc.cyan(pc.bold('[mo-dev]'))} ${pc.green(
-                        'update',
-                    )} ${pc.gray(canister.alias)}`,
-                );
-                const pipe = verbosity >= 1;
-                if (generate) {
-                    runCommand('dfx', {
-                        args: ['generate', '-q', canister.alias],
-                        pipe,
-                    });
-                }
-                if (deploy) {
-                    runCommand('dfx', {
-                        args: ['deploy', '-qy', canister.alias],
-                        pipe,
-                    });
-                }
-            });
+            Promise.all(
+                canisters.map(async (canister) => {
+                    console.log(
+                        `${pc.dim(time)} ${pc.cyan(
+                            pc.bold('[mo-dev]'),
+                        )} ${pc.green('update')} ${pc.gray(canister.alias)}`,
+                    );
+                    const pipe = verbosity >= 1;
+                    if (generate) {
+                        await finishProcess(
+                            runCommand('dfx', {
+                                args: ['generate', '-q', canister.alias],
+                                pipe,
+                            }),
+                        );
+                    }
+                    if (deploy) {
+                        await finishProcess(
+                            runCommand('dfx', {
+                                args: ['deploy', '-qy', canister.alias],
+                                pipe,
+                            }),
+                        );
+                    }
+                }),
+            );
         }, 100);
     };
 
