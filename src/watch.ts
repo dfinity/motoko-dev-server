@@ -8,9 +8,13 @@ import { loadDfxConfig } from './dfx';
 import { Settings } from './settings';
 import { getVirtualFile } from './utils/motoko';
 import wasm from './wasm';
+import glob from 'fast-glob';
+
+// Pattern to watch for file changes
+const watchGlob = '**/*.mo';
 
 // Paths to always exclude from the file watcher
-const excludePaths = ['**/node_modules/**/*', '**/.vessel/.tmp/**/*'];
+const watchIgnore = ['**/node_modules/**/*', '**/.vessel/.tmp/**/*'];
 
 let canisters: Canister[] | undefined;
 
@@ -128,14 +132,23 @@ export function watch({
         }, 100);
     };
 
+    // File source
+    const sourceCache = new Map<string, string>();
+
     const updateCanister = (canister: Canister) => {
         try {
+            const originalSource = sourceCache.get(canister.file);
+            const source = readFileSync(canister.file, 'utf8');
+            sourceCache.set(canister.file, source);
+            if (source === originalSource) {
+                return false;
+            }
             if (hotReload) {
-                const source = readFileSync(canister.file, 'utf8');
                 wasm.update_canister(canister.file, canister.alias, source);
                 const file = getVirtualFile(canister.file);
                 file.write(source);
             }
+            return true;
         } catch (err) {
             console.error(
                 pc.red(
@@ -144,6 +157,7 @@ export function watch({
                     }`,
                 ),
             );
+            return false;
         }
     };
 
@@ -166,7 +180,7 @@ export function watch({
     // console.log(pc.gray('Waiting for Motoko file changes...'));
 
     const dfxWatcher = chokidar
-        .watch('./dfx.json', { cwd: directory, ignored: excludePaths })
+        .watch('./dfx.json', { cwd: directory, ignored: watchIgnore })
         .on('change', (path) => {
             if (!path.endsWith('dfx.json')) {
                 console.warn('Received unexpected `dfx.json` path:', path);
@@ -181,13 +195,11 @@ export function watch({
                     removeCanister(canister);
                 }
             });
-            canisters?.forEach((canister) => {
-                updateCanister(canister);
-            });
+            canisters?.forEach((canister) => updateCanister(canister));
         });
 
     const moWatcher = chokidar
-        .watch('**/*.mo', { cwd: directory, ignored: excludePaths })
+        .watch(watchGlob, { cwd: directory, ignored: watchIgnore })
         .on('all', (event, path) => {
             if (!path.endsWith('.mo')) {
                 return;
@@ -195,17 +207,33 @@ export function watch({
             if (verbosity >= 1) {
                 console.log(pc.blue(`${pc.bold(event)} ${path}`));
             }
-            notifyChange();
+            let shouldNotify = true;
             canisters?.forEach((canister) => {
                 if (resolve(directory, path) === canister.file) {
                     if (event === 'unlink') {
                         removeCanister(canister);
                     } else {
-                        updateCanister(canister);
+                        if (!updateCanister(canister)) {
+                            shouldNotify = false;
+                        }
                     }
                 }
             });
+            if (shouldNotify) {
+                notifyChange();
+            }
         });
+
+    // Synchronously prepare files
+    glob.sync(watchGlob, { cwd: directory, ignore: watchIgnore }).forEach(
+        (path) => {
+            canisters?.forEach((canister) => {
+                if (resolve(directory, path) === canister.file) {
+                    updateCanister(canister);
+                }
+            });
+        },
+    );
 
     return {
         dfxJson: dfxWatcher,
