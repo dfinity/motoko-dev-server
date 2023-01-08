@@ -5,6 +5,10 @@
 
 ---
 
+#### Try out the [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react) starter project directly in your browser:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/rvanasa/vite-react-motoko)
+
 `mo-dev` is a flexible command-line tool for speeding up your Motoko development workflow. 
 
 ## Quick Start
