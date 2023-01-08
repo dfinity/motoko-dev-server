@@ -5,15 +5,17 @@
 
 ---
 
-#### Try out the [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react) starter project directly in your browser:
+`mo-dev` is a flexible command-line tool for speeding up your Motoko development workflow. 
+
+## Try Online
+
+Get started with a full-stack [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react) project directly in your browser:
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/rvanasa/vite-react-motoko)
 
-`mo-dev` is a flexible command-line tool for speeding up your Motoko development workflow. 
-
 ## Quick Start
 
-Ensure that you have [Node.js](https://nodejs.org/en/) `>= 16.x` installed on your system, and then run the following command:
+Make sure that [Node.js](https://nodejs.org/en/) `>= 16.x` is installed on your system, and then run the following command:
 
 ```sh
 npm i -g mo-dev
