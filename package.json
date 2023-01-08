@@ -21,11 +21,8 @@
         "@dfinity/candid": "^0.15.1",
         "@dfinity/principal": "^0.15.1",
         "body-parser": "1.20.1",
-        "bytes": "3.1.2",
-        "cbor": "8.1.0",
         "chokidar": "3.5.3",
         "commander": "9.4.1",
-        "compression": "1.7.4",
         "cookie-parser": "1.4.6",
         "cors": "2.8.5",
         "debug": "4.3.4",
@@ -35,8 +32,7 @@
         "motoko": "3.0.1",
         "picocolors": "^1.0.0",
         "swagger-jsdoc": "6.2.5",
-        "swagger-ui-express": "4.5.0",
-        "type-is": "1.6.18"
+        "swagger-ui-express": "4.5.0"
     },
     "devDependencies": {
         "@types/body-parser": "^1.19.2",

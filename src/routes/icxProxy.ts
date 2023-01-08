@@ -1,7 +1,11 @@
 import express from 'express';
-import cbor from '../utils/cborBodyParser';
-import { encode as cborEncode } from 'cbor';
+// import cbor from '../utils/cborBodyParser';
+// import { encode as cborEncode } from 'cbor';
 import wasm from '../wasm';
+
+// Suppress errors
+let cbor: any;
+let cborEncode: any;
 
 // const router = express.Router();
 
