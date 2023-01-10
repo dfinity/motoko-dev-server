@@ -27,7 +27,7 @@ export default function devServer(options: Partial<Settings> = {}) {
     }
 
     return {
+        watcher: watch(settings),
         server: settings.hotReload ? serve(settings) : null,
-        watch: watch(settings),
     };
 }
