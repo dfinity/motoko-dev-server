@@ -248,5 +248,9 @@ export function watch({
     return {
         dfxJson: dfxWatcher,
         motoko: moWatcher,
+        close() {
+            dfxWatcher.close();
+            moWatcher.close();
+        },
     };
 }

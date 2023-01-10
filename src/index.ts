@@ -26,8 +26,13 @@ export default function devServer(options: Partial<Settings> = {}) {
         process.exit(1);
     }
 
-    return {
+    const output = {
         watcher: watch(settings),
         server: settings.hotReload ? serve(settings) : null,
+        close() {
+            output.watcher.close();
+            output.server?.close();
+        },
     };
+    return output;
 }
