@@ -5,6 +5,8 @@ import { loadDfxConfig } from './dfx';
 import pc from 'picocolors';
 import wasm from './wasm';
 
+export { Settings, defaultSettings };
+
 export default function devServer(options: Partial<Settings> = {}) {
     const settings: Settings = {
         ...defaultSettings,
