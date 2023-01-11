@@ -6,7 +6,7 @@ import devServer from '../src';
 const projectPath = join(__dirname, 'project');
 
 const waitUntilLoaded = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // TODO: deterministic
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // TODO: deterministic
 };
 
 describe('mo-dev', () => {
@@ -92,6 +92,8 @@ describe('mo-dev', () => {
                 { args: [] },
             );
             expect(response.data).toStrictEqual({ value: '123' });
+        } catch (err) {
+            console.error(err);
         } finally {
             close();
         }
