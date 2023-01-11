@@ -9,7 +9,7 @@
 
 ## Try Online
 
-Get started with a full-stack [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react) project directly in your browser:
+Get started with a full-stack [Vite + React + Motoko](https://github.com/dfinity/motoko-dev-server/tree/main/examples/vite-react#readme) project directly in your browser:
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/rvanasa/vite-react-motoko)
 
