@@ -77,7 +77,7 @@ devServer({
 
 ## Experimental Features
 
-Enable the [Motoko VM](https://github.com/dfinity/motoko.rs) hot module reload (HMR) server (`--hot-reload`, `-r`):
+Enable the [Motoko VM](https://github.com/dfinity/motoko.rs) hot module replacement (HMR) server (`--hot-reload`, `-r`):
 
 ```sh
 mo-dev --hot-reload
@@ -89,7 +89,7 @@ Run the HMR server on a specified port (`--port` or `-p`; default is `7700`):
 mo-dev --port 7700
 ```
 
-Hot module reloading makes it possible to preserve a Motoko actor's state between code changes. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.
+Hot module replacement makes it possible to preserve a Motoko actor's state between code changes. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.
 
 For most use cases, [`ic0`](https://www.npmjs.com/package/ic0) is the simplest way to try this feature in a JavaScript environment:
 
