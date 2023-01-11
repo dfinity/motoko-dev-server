@@ -56,6 +56,28 @@ describe('mo-dev', () => {
         }
     });
 
+    test.skip('generates type bindings', async () => {
+        const declarationPath = join(
+            projectPath,
+            'src/declarations/motoko_canister/index.js',
+        );
+        if (existsSync(declarationPath)) {
+            unlinkSync(declarationPath);
+        }
+
+        const { close } = devServer({
+            directory: projectPath,
+            generate: true,
+        });
+
+        await waitUntilLoaded();
+        try {
+            expect(existsSync(declarationPath));
+        } finally {
+            close();
+        }
+    });
+
     test('starts the VM server on a custom port', async () => {
         const port = 56789;
         const { close } = devServer({
