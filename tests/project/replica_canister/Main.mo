@@ -1,7 +1,7 @@
 import Lib "lib/Echo";
 
 actor {
-    func main() : Nat {
+    public func main() : async Nat {
         Lib.echo(123);
     };
 };
