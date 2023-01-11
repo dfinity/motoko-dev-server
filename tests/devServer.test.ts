@@ -92,8 +92,6 @@ describe('mo-dev', () => {
                 { args: [] },
             );
             expect(response.data).toStrictEqual({ value: '123' });
-        } catch (err) {
-            console.error(err);
         } finally {
             close();
         }
