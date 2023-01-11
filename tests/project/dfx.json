@@ -3,6 +3,10 @@
         "motoko_canister": {
             "type": "motoko",
             "main": "motoko_canister/Main.mo"
+        },
+        "vm_canister": {
+            "type": "motoko",
+            "main": "vm/vm_canister/Main.mo"
         }
     }
 }

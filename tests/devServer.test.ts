@@ -1,21 +1,18 @@
+import axios from 'axios';
 import { existsSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import devServer from '../src';
 
 const projectPath = join(__dirname, 'project');
-const outputPath = join(projectPath, 'output');
+
+const waitUntilLoaded = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // TODO: deterministic
+};
 
 describe('mo-dev', () => {
     test('detects Motoko files', async () => {
-        const logSpy = jest.spyOn(console, 'log');
-
-        if (existsSync(outputPath)) {
-            unlinkSync(outputPath);
-        }
-
-        const { watcher, server, close } = devServer({
+        const { watcher, close } = devServer({
             directory: projectPath,
-            execute: `echo "ran command" >> output`,
         });
 
         const files: string[] = [];
@@ -26,17 +23,77 @@ describe('mo-dev', () => {
             files.push(file);
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // TODO: deterministic
+        await waitUntilLoaded();
+        try {
+            files.sort();
+            expect(files).toStrictEqual([
+                'dfx.json',
+                'motoko_canister/Main.mo',
+                'motoko_canister/lib/Echo.mo',
+                'vm/vm_canister/Main.mo',
+            ]);
+        } finally {
+            close();
+        }
+    });
 
-        files.sort();
-        expect(files).toStrictEqual([
-            'dfx.json',
-            'motoko_canister/Main.mo',
-            'motoko_canister/lib/Echo.mo',
-        ]);
+    test('runs a provided command', async () => {
+        const outputPath = join(projectPath, 'generated.txt');
+        if (existsSync(outputPath)) {
+            unlinkSync(outputPath);
+        }
 
-        expect(readFileSync(outputPath, 'utf8')).toEqual('ran command\n');
+        const { close } = devServer({
+            directory: projectPath,
+            execute: `echo "ran command" >> generated.txt`,
+        });
 
-        close();
+        await waitUntilLoaded();
+        try {
+            expect(readFileSync(outputPath, 'utf8')).toEqual('ran command\n');
+        } finally {
+            close();
+        }
+    });
+
+    test.skip('generates type bindings', async () => {
+        const declarationPath = join(
+            projectPath,
+            'src/declarations/motoko_canister/index.js',
+        );
+        if (existsSync(declarationPath)) {
+            unlinkSync(declarationPath);
+        }
+
+        const { close } = devServer({
+            directory: projectPath,
+            generate: true,
+        });
+
+        await waitUntilLoaded();
+        try {
+            expect(existsSync(declarationPath));
+        } finally {
+            close();
+        }
+    });
+
+    test('starts the VM server on a custom port', async () => {
+        const port = 56789;
+        const { close } = devServer({
+            directory: join(projectPath, 'vm'),
+            hotReload: true,
+            port,
+        });
+        await waitUntilLoaded();
+        try {
+            const response = await axios.post(
+                `http://localhost:${port}/call/vm_canister/main`,
+                { args: [] },
+            );
+            expect(response.data).toStrictEqual({ value: '123' });
+        } finally {
+            close();
+        }
     });
 });

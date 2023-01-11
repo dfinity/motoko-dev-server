@@ -4,7 +4,7 @@ import icxProxy from './icxProxy';
 
 const routes = [
     canister,
-    icxProxy,
+    // icxProxy,
     // swagger,
 ];
 export default routes;
