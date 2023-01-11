@@ -1,12 +1,12 @@
 {
     "canisters": {
-        "replica_canister": {
+        "motoko_canister": {
             "type": "motoko",
-            "main": "replica_canister/Main.mo"
+            "main": "motoko_canister/Main.mo"
         },
         "vm_canister": {
             "type": "motoko",
-            "main": "vm_canister/Main.mo"
+            "main": "vm/vm_canister/Main.mo"
         }
     }
 }
