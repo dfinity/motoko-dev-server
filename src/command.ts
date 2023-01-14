@@ -20,7 +20,7 @@ const {
     exec,
     generate,
     deploy,
-    reinstall,
+    yes,
     hotReload,
 } = program
     .name('mo-dev')
@@ -36,8 +36,8 @@ const {
     .option('-c, --cwd <directory>', 'directory containing a `dfx.json` file')
     .option('-d, --deploy', `run \`dfx deploy\` on changed canister`)
     .option(
-        '-r, --reinstall',
-        `reinstall when necessary (may reset canister state)`,
+        '-y, --yes',
+        `respond "yes" to reinstall prompts (may reset canister state)`,
     )
     .option('-g, --generate', `run \`dfx generate\` on changed canister`)
     .option('-x, --exec <exec>', `execute command on file change`)
@@ -70,7 +70,7 @@ const settings: Settings = {
     verbosity,
     generate: !!generate || defaultSettings.generate,
     deploy: !!deploy || defaultSettings.deploy,
-    reinstall: !!reinstall || defaultSettings.reinstall,
+    reinstall: !!yes || defaultSettings.reinstall,
     hotReload: !!hotReload || defaultSettings.hotReload,
 };
 

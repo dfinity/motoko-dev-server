@@ -43,10 +43,10 @@ Deploy canisters on Motoko file change (`--deploy` or `-d`):
 mo-dev --deploy
 ```
 
-Automatically reinstall canisters when necessary (`--reinstall` or `-r`; may clear canister state):
+Automatically respond "yes" to reinstall prompts (`--yes` or `-y`; may clear canister state):
 
 ```sh
-mo-dev --deploy --reinstall
+mo-dev --deploy -y
 ```
 
 Run an arbitrary command on Motoko file change (`--exec` or `-x`):
