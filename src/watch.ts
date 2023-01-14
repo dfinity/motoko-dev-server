@@ -169,8 +169,8 @@ export function watch({
     };
 
     let changeTimeout: ReturnType<typeof setTimeout> | undefined;
-    let deployProcess: ReturnType<typeof spawn> | undefined;
     let execProcess: ReturnType<typeof spawn> | undefined;
+    const deployProcesses: ReturnType<typeof spawn>[] = [];
     const notifyChange = () => {
         clearTimeout(changeTimeout);
         changeTimeout = setTimeout(() => {
@@ -190,9 +190,7 @@ export function watch({
             }
 
             // Restart deployment
-            if (deployProcess) {
-                deployProcess.kill();
-            }
+            deployProcesses.forEach((p) => p.kill());
 
             // TODO: only run for relevant canisters
             Promise.all(
@@ -208,7 +206,7 @@ export function watch({
                         );
                     }
                     if (deploy) {
-                        deployProcess = runCommand('dfx', {
+                        const process = runCommand('dfx', {
                             args: [
                                 'deploy',
                                 canister.alias,
@@ -218,11 +216,18 @@ export function watch({
                             // TODO: hide 'Module hash ... is already installed' warnings
                             pipe: pipe || !reinstall,
                         });
-                        await finishProcess(deployProcess);
-                        if (deployProcess?.exitCode === 0) {
-                            log(0, pc.gray(`deploy ${canister.alias}`));
+                        try {
+                            deployProcesses.push(process);
+                            await finishProcess(process);
+                            if (process?.exitCode === 0) {
+                                log(0, pc.gray(`deploy ${canister.alias}`));
+                            }
+                        } finally {
+                            const index = deployProcesses.indexOf(process);
+                            if (index !== -1) {
+                                deployProcesses.splice(index, 1);
+                            }
                         }
-                        deployProcess = undefined;
                     }
                 }),
             );
