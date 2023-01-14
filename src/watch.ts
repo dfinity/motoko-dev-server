@@ -116,7 +116,7 @@ export function watch({
                         log(
                             0,
                             pc.cyan(
-                                `${pc.bold(`${canister.alias} →`)} ${pc.white(
+                                `${pc.bold(`${canister.alias}`)} → ${pc.white(
                                     `http://127.0.0.1:4943?canisterId=${uiAddress}&id=${id}`,
                                 )}`,
                             ),
@@ -219,6 +219,9 @@ export function watch({
                             pipe: pipe || !reinstall,
                         });
                         await finishProcess(deployProcess);
+                        if (deployProcess?.exitCode === 0) {
+                            log(0, pc.gray(`deploy ${canister.alias}`));
+                        }
                         deployProcess = undefined;
                     }
                 }),
