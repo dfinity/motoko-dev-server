@@ -195,22 +195,27 @@ export function watch({
             // TODO: only run for relevant canisters
             Promise.all(
                 canisters.map(async (canister) => {
-                    log(0, `${pc.green('update')} ${pc.gray(canister.alias)}`);
+                    // log(0, `${pc.green('update')} ${pc.gray(canister.alias)}`);
                     const pipe = verbosity >= 1;
                     if (generate) {
-                        await finishProcess(
-                            runCommand('dfx', {
-                                args: ['generate', '-q', canister.alias],
-                                pipe,
-                            }),
-                        );
+                        const process = runCommand('dfx', {
+                            args: ['generate', canister.alias],
+                            pipe,
+                        });
+                        await finishProcess(process);
+                        if (process?.exitCode === 0) {
+                            log(
+                                0,
+                                pc.green(`generate ${pc.gray(canister.alias)}`),
+                            );
+                        }
                     }
                     if (deploy) {
                         const process = runCommand('dfx', {
                             args: [
                                 'deploy',
                                 canister.alias,
-                                '-qq',
+                                ...(verbosity >= 1 ? [] : ['-qq']),
                                 ...(reinstall ? ['-y'] : []),
                             ],
                             // TODO: hide 'Module hash ... is already installed' warnings
@@ -220,7 +225,12 @@ export function watch({
                             deployProcesses.push(process);
                             await finishProcess(process);
                             if (process?.exitCode === 0) {
-                                log(0, pc.gray(`deploy ${canister.alias}`));
+                                log(
+                                    0,
+                                    pc.green(
+                                        `deploy ${pc.gray(canister.alias)}`,
+                                    ),
+                                );
                             }
                         } finally {
                             const index = deployProcesses.indexOf(process);
