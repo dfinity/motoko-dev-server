@@ -46,13 +46,19 @@ mo-dev --deploy
 Automatically reinstall canisters when necessary (`--reinstall` or `-r`; may clear canister state):
 
 ```sh
-mo-dev --reinstall # equivalent to `mo-dev --deploy --reinstall`
+mo-dev --deploy --reinstall
 ```
 
 Run an arbitrary command on Motoko file change (`--exec` or `-x`):
 
 ```sh
 mo-dev --exec 'npm run my-reload-script'
+```
+
+Specify the working directory (`--cwd` or `-c`; should contain a `dfx.json` file):
+
+```sh
+mo-dev --cwd path/to/dfx_project
 ```
 
 ## Advanced Features
