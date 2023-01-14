@@ -37,10 +37,16 @@ Regenerate type declarations on Motoko file change (`--generate` or `-g`):
 mo-dev --generate
 ```
 
-Redeploy canisters on Motoko file change (`--deploy` or `-d`):
+Deploy canisters on Motoko file change (`--deploy` or `-d`):
 
 ```sh
 mo-dev --deploy
+```
+
+Automatically reinstall canisters when necessary (`--reinstall` or `-r`; may clear canister state):
+
+```sh
+mo-dev --reinstall # equivalent to `mo-dev --deploy --reinstall`
 ```
 
 Run an arbitrary command on Motoko file change (`--exec` or `-x`):
@@ -77,7 +83,7 @@ devServer({
 
 ## Experimental Features
 
-Enable the [Motoko VM](https://github.com/dfinity/motoko.rs) hot module replacement (HMR) server (`--hot-reload`, `-r`):
+Enable the [Motoko VM](https://github.com/dfinity/motoko.rs) hot module replacement (HMR) server (`--hot-reload`):
 
 ```sh
 mo-dev --hot-reload
@@ -86,7 +92,7 @@ mo-dev --hot-reload
 Run the HMR server on a specified port (`--port` or `-p`; default is `7700`):
 
 ```sh
-mo-dev --port 7700
+mo-dev --hot-reload --port 7700
 ```
 
 Hot module replacement makes it possible to preserve a Motoko actor's state between code changes. This feature is powered by the [Motoko VM](https://github.com/dfinity/motoko.rs), a work-in-progress Motoko interpreter written in Rust.

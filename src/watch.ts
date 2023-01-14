@@ -1,6 +1,7 @@
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import chokidar from 'chokidar';
-import { readFileSync } from 'fs';
+import glob from 'fast-glob';
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import pc from 'picocolors';
 import { Canister, getDfxCanisters } from './canister';
@@ -8,7 +9,6 @@ import { loadDfxConfig } from './dfx';
 import { Settings } from './settings';
 import { getVirtualFile } from './utils/motoko';
 import wasm from './wasm';
-import glob from 'fast-glob';
 
 // Pattern to watch for file changes
 const watchGlob = '**/*.mo';
@@ -28,8 +28,45 @@ export function watch({
     verbosity,
     generate,
     deploy,
+    reinstall,
     hotReload,
 }: Settings) {
+    const log = (level: number, ...args: any[]) => {
+        if (verbosity >= level) {
+            const time = new Date().toLocaleTimeString();
+            console.log(
+                `${pc.dim(time)} ${pc.cyan(pc.bold('[mo-dev]'))}`,
+                ...args,
+            );
+        }
+    };
+
+    const loadCanisterIds = (): Record<string, string> | undefined => {
+        try {
+            const network = 'local';
+            const canisterIdsPath = resolve(
+                directory,
+                '.dfx',
+                network,
+                'canister_ids.json',
+            );
+            if (!existsSync(canisterIdsPath)) {
+                return;
+            }
+            log(1, 'Loading canister IDs...');
+            const canisterIds: {
+                [alias: string]: { [network: string]: string };
+            } = JSON.parse(readFileSync(canisterIdsPath, 'utf8'));
+            return Object.fromEntries(
+                Object.entries(canisterIds)
+                    .map(([alias, ids]) => [alias, ids[network]])
+                    .filter(([, id]) => id),
+            );
+        } catch (err) {
+            console.error('Error while loading `canister_ids.json`:', err);
+        }
+    };
+
     const updateDfxConfig = () => {
         try {
             const dfxConfig = loadDfxConfig(directory);
@@ -46,6 +83,47 @@ export function watch({
             console.error(
                 `Error while loading 'dfx.json' file:\n${err.message || err}`,
             );
+        }
+
+        if (deploy || reinstall) {
+            let canisterIds = loadCanisterIds();
+
+            const uiAlias = '__Candid_UI';
+            const uiAddress = canisterIds?.[uiAlias];
+            if (!uiAddress) {
+                // Deploy initial canisters
+                canisters.forEach((canister) => {
+                    log(0, pc.green('prepare'), pc.gray(canister.alias));
+                    spawnSync(
+                        'dfx',
+                        [
+                            'deploy',
+                            canister.alias,
+                            ...(reinstall ? ['-y'] : []),
+                        ],
+                        {
+                            cwd: directory,
+                            stdio: 'inherit',
+                            encoding: 'utf-8',
+                        },
+                    );
+                });
+            } else if (canisters.length) {
+                // Show Candid UI addresses
+                canisters.forEach((canister) => {
+                    const id = canisterIds[canister.alias];
+                    if (id) {
+                        log(
+                            0,
+                            pc.cyan(
+                                `${pc.bold(`${canister.alias} →`)} ${pc.white(
+                                    `http://127.0.0.1:4943?canisterId=${uiAddress}&id=${id}`,
+                                )}`,
+                            ),
+                        );
+                    }
+                });
+            }
         }
     };
     updateDfxConfig();
@@ -91,6 +169,7 @@ export function watch({
     };
 
     let changeTimeout: ReturnType<typeof setTimeout> | undefined;
+    let deployProcess: ReturnType<typeof spawn> | undefined;
     let execProcess: ReturnType<typeof spawn> | undefined;
     const notifyChange = () => {
         clearTimeout(changeTimeout);
@@ -110,16 +189,15 @@ export function watch({
                 // });
             }
 
-            const time = new Date().toLocaleTimeString();
+            // Restart deployment
+            if (deployProcess) {
+                deployProcess.kill();
+            }
 
             // TODO: only run for relevant canisters
             Promise.all(
                 canisters.map(async (canister) => {
-                    console.log(
-                        `${pc.dim(time)} ${pc.cyan(
-                            pc.bold('[mo-dev]'),
-                        )} ${pc.green('update')} ${pc.gray(canister.alias)}`,
-                    );
+                    log(0, `${pc.green('update')} ${pc.gray(canister.alias)}`);
                     const pipe = verbosity >= 1;
                     if (generate) {
                         await finishProcess(
@@ -130,12 +208,18 @@ export function watch({
                         );
                     }
                     if (deploy) {
-                        await finishProcess(
-                            runCommand('dfx', {
-                                args: ['deploy', '-qy', canister.alias],
-                                pipe,
-                            }),
-                        );
+                        deployProcess = runCommand('dfx', {
+                            args: [
+                                'deploy',
+                                canister.alias,
+                                '-qq',
+                                ...(reinstall ? ['-y'] : []),
+                            ],
+                            // TODO: hide 'Module hash ... is already installed' warnings
+                            pipe: pipe || !reinstall,
+                        });
+                        await finishProcess(deployProcess);
+                        deployProcess = undefined;
                     }
                 }),
             );
@@ -145,15 +229,15 @@ export function watch({
     // File source
     const sourceCache = new Map<string, string>();
 
+    // Update a canister on the HMR server
     const updateCanister = (canister: Canister) => {
         try {
-            const originalSource = sourceCache.get(canister.file);
-            const source = readFileSync(canister.file, 'utf8');
-            sourceCache.set(canister.file, source);
-            if (source === originalSource) {
-                return false;
-            }
             if (hotReload) {
+                const source = sourceCache.get(canister.file);
+                if (!source) {
+                    console.warn('Missing source file for HMR server');
+                    return;
+                }
                 wasm.update_canister(canister.file, canister.alias, source);
                 const file = getVirtualFile(canister.file);
                 file.write(source);
@@ -171,11 +255,15 @@ export function watch({
         }
     };
 
+    // Remove a canister on the HMR server
     const removeCanister = (canister: Canister) => {
         try {
-            wasm.remove_canister(canister.alias);
-            const file = getVirtualFile(canister.file);
-            file.delete();
+            sourceCache.delete(canister.file);
+            if (hotReload) {
+                wasm.remove_canister(canister.alias);
+                const file = getVirtualFile(canister.file);
+                file.delete();
+            }
         } catch (err) {
             console.error(
                 pc.red(
@@ -218,14 +306,22 @@ export function watch({
                 console.log(pc.blue(`${pc.bold(event)} ${path}`));
             }
             let shouldNotify = true;
+            const resolvedPath = resolve(directory, path);
+            if (event === 'unlink') {
+                sourceCache.delete(resolvedPath);
+            } else {
+                const source = readFileSync(resolvedPath, 'utf8');
+                if (sourceCache.get(resolvedPath) === source) {
+                    shouldNotify = false;
+                }
+                sourceCache.set(resolvedPath, source);
+            }
             canisters?.forEach((canister) => {
-                if (resolve(directory, path) === canister.file) {
+                if (resolvedPath === canister.file) {
                     if (event === 'unlink') {
                         removeCanister(canister);
-                    } else {
-                        if (!updateCanister(canister)) {
-                            shouldNotify = false;
-                        }
+                    } else if (!updateCanister(canister)) {
+                        shouldNotify = false;
                     }
                 }
             });
