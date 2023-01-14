@@ -21,7 +21,7 @@ export default function devServer(options: Partial<Settings> = {}) {
             ),
         );
         console.error();
-        console.error(pc.bold(`example:`), '$ mo-dev ./path/to/my/project');
+        console.error(pc.bold(`Example:`), '$ mo-dev -c path/to/my/dfx_project');
         console.error();
         process.exit(1);
     }
