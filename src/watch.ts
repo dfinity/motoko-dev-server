@@ -162,6 +162,12 @@ export function watch({
                     }
                 });
             }
+        } else if (generate) {
+            spawnSync('dfx', ['canister', 'create', '--all'], {
+                cwd: directory,
+                stdio: verbosity >= 1 ? 'inherit' : 'ignore',
+                encoding: 'utf-8',
+            });
         }
     };
     updateDfxConfig();
