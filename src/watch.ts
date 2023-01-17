@@ -19,13 +19,38 @@ const watchIgnore = ['**/node_modules/**/*', '**/.vessel/.tmp/**/*'];
 
 let canisters: Canister[] | undefined;
 
-const getEditedSource = (jsSource: string) => `// Modified by 'mo-dev'
-${jsSource.replace('export const createActor', 'export const _createActor')}
+const editJSBinding = (
+    canister: Canister,
+    source: string,
+) => `// Modified by 'mo-dev'
+${source.replace('export const createActor', 'export const _createActor')}
 export function createActor(canisterId, ...args) {
-    if () {
-
+    const alias = ${JSON.stringify(canister.alias)};
+    const actor = _createActor(canisterId, ...args);
+    if (process.env.NODE_ENV === 'development') {
+      Object.keys(actor).forEach((methodName) => {
+        actor[methodName] = async (...args) => {
+          const response = await fetch(
+            new URL(\`http://localhost:7700/call/\${alias}/\${methodName}\`),
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ args }),
+            },
+          );
+          if (!response.ok) {
+            throw new Error(
+              \`Received status code \${response.status} from Motoko HMR server\`,
+            );
+          }
+          const data = await response.json();
+          return data.value;
+        };
+      });
     }
-    return _createActor(canisterId, ...args);
+    return actor;
 }
 `;
 
@@ -231,15 +256,17 @@ export function watch({
                                 const jsPath = resolve(outputPath, 'index.js');
                                 if (existsSync(jsPath)) {
                                     try {
-                                        const jsSource = readFileSync(
+                                        const binding = readFileSync(
                                             jsPath,
                                             'utf8',
                                         );
-                                        const editedSource =
-                                            getEditedSource(jsSource);
+                                        const newBinding = editJSBinding(
+                                            canister,
+                                            binding,
+                                        );
                                         writeFileSync(
                                             jsPath,
-                                            editedSource,
+                                            newBinding,
                                             'utf8',
                                         );
                                     } catch (err) {
