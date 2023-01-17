@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from 'child_process';
 import chokidar from 'chokidar';
 import glob from 'fast-glob';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import pc from 'picocolors';
 import { Canister, getDfxCanisters } from './canister';
@@ -9,6 +9,7 @@ import { loadDfxConfig } from './dfx';
 import { Settings } from './settings';
 import { getVirtualFile } from './utils/motoko';
 import wasm from './wasm';
+import { FileCache } from './cache';
 
 // Pattern to watch for file changes
 const watchGlob = '**/*.mo';
@@ -17,6 +18,41 @@ const watchGlob = '**/*.mo';
 const watchIgnore = ['**/node_modules/**/*', '**/.vessel/.tmp/**/*'];
 
 let canisters: Canister[] | undefined;
+
+const editJSBinding = (
+    canister: Canister,
+    source: string,
+) => `// Modified by 'mo-dev'
+${source.replace('export const createActor', 'export const _createActor')}
+export function createActor(canisterId, ...args) {
+    const alias = ${JSON.stringify(canister.alias)};
+    const actor = _createActor(canisterId, ...args);
+    if (process.env.NODE_ENV === 'development') {
+      Object.keys(actor).forEach((methodName) => {
+        actor[methodName] = async (...args) => {
+          const response = await fetch(
+            new URL(\`http://localhost:7700/call/\${alias}/\${methodName}\`),
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ args }),
+            },
+          );
+          if (!response.ok) {
+            throw new Error(
+              \`Received status code \${response.status} from Motoko HMR server\`,
+            );
+          }
+          const data = await response.json();
+          return data.value;
+        };
+      });
+    }
+    return actor;
+}
+`;
 
 export function findCanister(alias: string): Canister | undefined {
     return canisters.find((c) => c.alias === alias);
@@ -40,6 +76,8 @@ export function watch({
             );
         }
     };
+
+    const fileCache = new FileCache({ directory });
 
     const loadCanisterIds = (): Record<string, string> | undefined => {
         try {
@@ -133,7 +171,8 @@ export function watch({
         { args, pipe }: { args?: string[]; pipe?: boolean } = {},
     ) => {
         if (verbosity >= 1) {
-            console.log(
+            log(
+                1,
                 pc.magenta(
                     `${pc.bold('run')} ${
                         args
@@ -208,6 +247,41 @@ export function watch({
                                 0,
                                 pc.green(`generate ${pc.gray(canister.alias)}`),
                             );
+                            if (hotReload) {
+                                const outputPath = resolve(
+                                    directory,
+                                    canister.config.declarations?.output ||
+                                        `src/declarations/${canister.alias}`,
+                                );
+                                const jsPath = resolve(outputPath, 'index.js');
+                                if (existsSync(jsPath)) {
+                                    try {
+                                        const binding = readFileSync(
+                                            jsPath,
+                                            'utf8',
+                                        );
+                                        const newBinding = editJSBinding(
+                                            canister,
+                                            binding,
+                                        );
+                                        writeFileSync(
+                                            jsPath,
+                                            newBinding,
+                                            'utf8',
+                                        );
+                                    } catch (err) {
+                                        console.error(
+                                            'Error while generating hot reload bindings:',
+                                            err,
+                                        );
+                                    }
+                                } else {
+                                    console.error(
+                                        'Error while generating hot reload bindings. File expected at path:',
+                                        jsPath,
+                                    );
+                                }
+                            }
                         }
                     }
                     if (deploy) {
@@ -244,16 +318,16 @@ export function watch({
         }, 100);
     };
 
-    // File source
-    const sourceCache = new Map<string, string>();
-
     // Update a canister on the HMR server
     const updateCanister = (canister: Canister) => {
         try {
             if (hotReload) {
-                const source = sourceCache.get(canister.file);
+                const source = fileCache.get(canister.file);
                 if (!source) {
-                    console.warn('Missing source file for HMR server');
+                    console.warn(
+                        'Missing source file for HMR server:',
+                        canister.file,
+                    );
                     return;
                 }
                 wasm.update_canister(canister.file, canister.alias, source);
@@ -276,7 +350,6 @@ export function watch({
     // Remove a canister on the HMR server
     const removeCanister = (canister: Canister) => {
         try {
-            sourceCache.delete(canister.file);
             if (hotReload) {
                 wasm.remove_canister(canister.alias);
                 const file = getVirtualFile(canister.file);
@@ -321,18 +394,17 @@ export function watch({
                 return;
             }
             if (verbosity >= 1) {
-                console.log(pc.blue(`${pc.bold(event)} ${path}`));
+                log(1, pc.blue(`${pc.bold(event)} ${path}`));
             }
             let shouldNotify = true;
             const resolvedPath = resolve(directory, path);
             if (event === 'unlink') {
-                sourceCache.delete(resolvedPath);
+                fileCache.invalidate(resolvedPath);
             } else {
-                const source = readFileSync(resolvedPath, 'utf8');
-                if (sourceCache.get(resolvedPath) === source) {
+                if (!fileCache.update(resolvedPath)) {
                     shouldNotify = false;
                 }
-                sourceCache.set(resolvedPath, source);
+                log(2, 'cache', resolvedPath);
             }
             canisters?.forEach((canister) => {
                 if (resolvedPath === canister.file) {

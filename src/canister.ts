@@ -4,6 +4,7 @@ import { DfxConfig } from './dfx';
 export interface Canister {
     alias: string;
     file: string;
+    config: any;
 }
 
 export function getDfxCanisters(
@@ -21,6 +22,7 @@ export function getDfxCanisters(
                 canisters.push({
                     alias,
                     file: resolve(directory, main),
+                    config,
                 });
             }
         });
