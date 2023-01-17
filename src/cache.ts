@@ -42,6 +42,7 @@ export class FileCache {
     update(path: string): boolean {
         path = this._resolvePath(path);
         const previous = this._map.get(path);
+        this._map.delete(path);
         const current = this.get(path);
         return current !== previous;
     }
