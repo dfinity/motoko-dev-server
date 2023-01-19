@@ -17,8 +17,10 @@ const watchGlob = '**/*.mo';
 // Paths to always exclude from the file watcher
 const watchIgnore = ['**/node_modules/**/*', '**/.vessel/.tmp/**/*'];
 
+// Canisters loaded from `dfx.json`
 let canisters: Canister[] | undefined;
 
+// Inject dev server logic into bindings created by `dfx generate`
 const editJSBinding = (
     canister: Canister,
     source: string,
@@ -209,102 +211,121 @@ export function watch({
         return commandProcess;
     };
 
-    const finishProcess = async (process: ReturnType<typeof spawn>) => {
-        return new Promise((resolve) => process.on('exit', resolve));
+    const finishProcess = async (
+        process: ReturnType<typeof spawn>,
+    ): Promise<number | null> => {
+        if (typeof process.exitCode === 'number') {
+            return process.exitCode;
+        }
+        return new Promise((resolve) =>
+            process.on('close', () => resolve(process.exitCode)),
+        );
     };
 
     let changeTimeout: ReturnType<typeof setTimeout> | undefined;
     let execProcess: ReturnType<typeof spawn> | undefined;
+    let deployPromise: Promise<any> | undefined;
     const deployProcesses: ReturnType<typeof spawn>[] = [];
     const notifyChange = () => {
         clearTimeout(changeTimeout);
-        changeTimeout = setTimeout(() => {
-            if (execute) {
-                if (execProcess) {
-                    execProcess.kill();
+        changeTimeout = setTimeout(async () => {
+            try {
+                if (execute) {
+                    if (execProcess) {
+                        // kill(execProcess.pid);
+                        await finishProcess(execProcess);
+                    }
+                    execProcess = runCommand(execute, { pipe: true });
+                    // commandProcess.on('close', (code) => {
+                    //     if (verbosity >= 1) {
+                    //         console.log(
+                    //             pc.dim('Command exited with code'),
+                    //             code ? pc.yellow(code) : pc.gray(0),
+                    //         );
+                    //     }
+                    // });
                 }
-                execProcess = runCommand(execute, { pipe: true });
-                // commandProcess.on('exit', (code) => {
-                //     if (verbosity >= 1) {
-                //         console.log(
-                //             pc.dim('Command exited with code'),
-                //             code ? pc.yellow(code) : pc.gray(0),
-                //         );
-                //     }
-                // });
-            }
 
-            // Restart deployment
-            deployProcesses.forEach((p) => p.kill());
+                // Restart deployment
+                // deployProcesses.forEach((p) => kill(p.pid));
+                for (const process of deployProcesses) {
+                    await finishProcess(process);
+                }
+                await deployPromise;
+                deployProcesses.length = 0;
 
-            // TODO: only run for relevant canisters
-            Promise.all(
-                canisters.map(async (canister) => {
-                    // log(0, `${pc.green('update')} ${pc.gray(canister.alias)}`);
-                    const pipe = verbosity >= 1;
-                    if (generate) {
-                        const process = runCommand('dfx', {
-                            args: ['generate', canister.alias],
-                            pipe,
-                        });
-                        await finishProcess(process);
-                        if (process?.exitCode === 0) {
-                            log(
-                                0,
-                                pc.green(`generate ${pc.gray(canister.alias)}`),
-                            );
-                            if (hotReload) {
-                                const outputPath = resolve(
-                                    directory,
-                                    canister.config.declarations?.output ||
-                                        `src/declarations/${canister.alias}`,
+                deployPromise = Promise.resolve().then(async () => {
+                    // TODO: only run for relevant canisters
+                    for (const canister of canisters) {
+                        // log(0, `${pc.green('update')} ${pc.gray(canister.alias)}`);
+                        const pipe = verbosity >= 1;
+                        if (generate) {
+                            const process = runCommand('dfx', {
+                                args: ['generate', canister.alias],
+                                pipe,
+                            });
+                            const exitCode = await finishProcess(process);
+                            if (exitCode === 0) {
+                                log(
+                                    0,
+                                    pc.green(
+                                        `generate ${pc.gray(canister.alias)}`,
+                                    ),
                                 );
-                                const jsPath = resolve(outputPath, 'index.js');
-                                if (existsSync(jsPath)) {
-                                    try {
-                                        const binding = readFileSync(
-                                            jsPath,
-                                            'utf8',
-                                        );
-                                        const newBinding = editJSBinding(
-                                            canister,
-                                            binding,
-                                        );
-                                        writeFileSync(
-                                            jsPath,
-                                            newBinding,
-                                            'utf8',
-                                        );
-                                    } catch (err) {
+                                if (hotReload) {
+                                    const outputPath = resolve(
+                                        directory,
+                                        canister.config.declarations?.output ||
+                                            `src/declarations/${canister.alias}`,
+                                    );
+                                    const jsPath = resolve(
+                                        outputPath,
+                                        'index.js',
+                                    );
+                                    if (existsSync(jsPath)) {
+                                        try {
+                                            const binding = readFileSync(
+                                                jsPath,
+                                                'utf8',
+                                            );
+                                            const newBinding = editJSBinding(
+                                                canister,
+                                                binding,
+                                            );
+                                            writeFileSync(
+                                                jsPath,
+                                                newBinding,
+                                                'utf8',
+                                            );
+                                        } catch (err) {
+                                            console.error(
+                                                'Error while generating hot reload bindings:',
+                                                err,
+                                            );
+                                        }
+                                    } else {
                                         console.error(
-                                            'Error while generating hot reload bindings:',
-                                            err,
+                                            'Error while generating hot reload bindings. File expected at path:',
+                                            jsPath,
                                         );
                                     }
-                                } else {
-                                    console.error(
-                                        'Error while generating hot reload bindings. File expected at path:',
-                                        jsPath,
-                                    );
                                 }
                             }
                         }
-                    }
-                    if (deploy) {
-                        const process = runCommand('dfx', {
-                            args: [
-                                'deploy',
-                                canister.alias,
-                                ...(verbosity >= 1 ? [] : ['-qq']),
-                                ...(reinstall ? ['-y'] : []),
-                            ],
-                            // TODO: hide 'Module hash ... is already installed' warnings
-                            pipe: pipe || !reinstall,
-                        });
-                        try {
+                        if (deploy) {
+                            const process = runCommand('dfx', {
+                                args: [
+                                    'deploy',
+                                    canister.alias,
+                                    ...(verbosity >= 1 ? [] : ['-qq']),
+                                    ...(reinstall ? ['-y'] : []),
+                                ],
+                                // TODO: hide 'Module hash ... is already installed' warnings
+                                pipe: pipe || !reinstall,
+                            });
                             deployProcesses.push(process);
-                            await finishProcess(process);
-                            if (process?.exitCode === 0) {
+                            const exitCode = await finishProcess(process);
+                            if (exitCode === 0) {
                                 log(
                                     0,
                                     pc.green(
@@ -312,20 +333,18 @@ export function watch({
                                     ),
                                 );
                             }
-                        } finally {
-                            const index = deployProcesses.indexOf(process);
-                            if (index !== -1) {
-                                deployProcesses.splice(index, 1);
-                            }
                         }
                     }
-                }),
-            );
+                });
+            } catch (err) {
+                throw err;
+                // console.error(err);
+            }
         }, 100);
     };
 
     // Update a canister on the HMR server
-    const updateCanister = (canister: Canister) => {
+    const updateCanister = (canister: Canister, { quiet = false } = {}) => {
         try {
             if (hotReload) {
                 const source = fileCache.get(canister.file);
@@ -339,6 +358,9 @@ export function watch({
                 wasm.update_canister(canister.file, canister.alias, source);
                 const file = getVirtualFile(canister.file);
                 file.write(source);
+                if (!quiet) {
+                    log(0, pc.green(`update ${pc.gray(canister.alias)}`));
+                }
             }
             return true;
         } catch (err) {
@@ -354,12 +376,15 @@ export function watch({
     };
 
     // Remove a canister on the HMR server
-    const removeCanister = (canister: Canister) => {
+    const removeCanister = (canister: Canister, { quiet = false } = {}) => {
         try {
             if (hotReload) {
                 wasm.remove_canister(canister.alias);
                 const file = getVirtualFile(canister.file);
                 file.delete();
+                if (!quiet) {
+                    log(0, pc.green(`remove ${pc.gray(canister.alias)}`));
+                }
             }
         } catch (err) {
             console.error(
@@ -429,9 +454,11 @@ export function watch({
     // Synchronously prepare files
     glob.sync(watchGlob, { cwd: directory, ignore: watchIgnore }).forEach(
         (path) => {
+            const resolvedPath = resolve(directory, path);
             canisters?.forEach((canister) => {
-                if (resolve(directory, path) === canister.file) {
-                    updateCanister(canister);
+                if (resolvedPath === canister.file) {
+                    fileCache.update(resolvedPath);
+                    updateCanister(canister, { quiet: true });
                 }
             });
         },

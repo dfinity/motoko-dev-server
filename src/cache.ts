@@ -27,12 +27,12 @@ export class FileCache {
             return;
         }
         const cached = this._map.get(path);
-        if (cached) {
+        if (cached !== undefined) {
             return cached;
         }
-        const source = readFileSync(path, 'utf8');
-        this._map.set(path, source);
-        return source;
+        const data = readFileSync(path, 'utf8');
+        this._map.set(path, data);
+        return data;
     }
 
     /**
