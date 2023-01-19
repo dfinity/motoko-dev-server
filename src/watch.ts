@@ -218,28 +218,28 @@ export function watch({
     const deployProcesses: ReturnType<typeof spawn>[] = [];
     const notifyChange = () => {
         clearTimeout(changeTimeout);
-        changeTimeout = setTimeout(() => {
-            if (execute) {
-                if (execProcess) {
-                    execProcess.kill();
+        changeTimeout = setTimeout(async () => {
+            try {
+                if (execute) {
+                    if (execProcess) {
+                        execProcess.kill();
+                    }
+                    execProcess = runCommand(execute, { pipe: true });
+                    // commandProcess.on('exit', (code) => {
+                    //     if (verbosity >= 1) {
+                    //         console.log(
+                    //             pc.dim('Command exited with code'),
+                    //             code ? pc.yellow(code) : pc.gray(0),
+                    //         );
+                    //     }
+                    // });
                 }
-                execProcess = runCommand(execute, { pipe: true });
-                // commandProcess.on('exit', (code) => {
-                //     if (verbosity >= 1) {
-                //         console.log(
-                //             pc.dim('Command exited with code'),
-                //             code ? pc.yellow(code) : pc.gray(0),
-                //         );
-                //     }
-                // });
-            }
 
-            // Restart deployment
-            deployProcesses.forEach((p) => p.kill());
+                // Restart deployment
+                deployProcesses.forEach((p) => p.kill());
 
-            // TODO: only run for relevant canisters
-            Promise.all(
-                canisters.map(async (canister) => {
+                // TODO: only run for relevant canisters
+                for (const canister of canisters) {
                     // log(0, `${pc.green('update')} ${pc.gray(canister.alias)}`);
                     const pipe = verbosity >= 1;
                     if (generate) {
@@ -319,8 +319,11 @@ export function watch({
                             }
                         }
                     }
-                }),
-            );
+                }
+            } catch (err) {
+                throw err;
+                // console.error(err);
+            }
         }, 100);
     };
 
