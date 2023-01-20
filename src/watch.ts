@@ -149,20 +149,25 @@ export function watch({
                     );
                 });
             } else if (canisters.length) {
-                // Show Candid UI addresses
-                canisters.forEach((canister) => {
-                    const id = canisterIds[canister.alias];
-                    if (id) {
-                        log(
-                            0,
-                            pc.cyan(
-                                `${pc.bold(`${canister.alias}`)} → ${pc.white(
-                                    `http://127.0.0.1:4943?canisterId=${uiAddress}&id=${id}`,
-                                )}`,
-                            ),
-                        );
-                    }
-                });
+                // Skip for environments where Candid UI is not available
+                if (!process.env.MO_DEV_HIDE_URLS) {
+                    // Show Candid UI addresses
+                    canisters.forEach((canister) => {
+                        const id = canisterIds[canister.alias];
+                        if (id) {
+                            log(
+                                0,
+                                pc.cyan(
+                                    `${pc.bold(
+                                        `${canister.alias}`,
+                                    )} → ${pc.white(
+                                        `http://127.0.0.1:4943?canisterId=${uiAddress}&id=${id}`,
+                                    )}`,
+                                ),
+                            );
+                        }
+                    });
+                }
             }
         } else if (generate) {
             spawnSync('dfx', ['canister', 'create', '--all'], {
@@ -424,9 +429,7 @@ export function watch({
             if (!path.endsWith('.mo')) {
                 return;
             }
-            if (verbosity >= 1) {
-                log(1, pc.blue(`${pc.bold(event)} ${path}`));
-            }
+            log(1, pc.blue(`${pc.bold(event)} ${path}`));
             let shouldNotify = true;
             const resolvedPath = resolve(directory, path);
             if (event === 'unlink') {
