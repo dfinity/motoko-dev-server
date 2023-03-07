@@ -1,7 +1,7 @@
 import { program, Option } from 'commander';
 import { resolve } from 'path';
-import { Settings, defaultSettings } from './settings';
-import devServer from '.';
+import { Settings, defaultSettings } from '../settings';
+import devServer from '..';
 
 let verbosity = defaultSettings.verbosity;
 const increaseVerbosity = () => verbosity++;
@@ -25,12 +25,13 @@ const { cwd, version, port, delay, exec, generate, deploy, yes, hotReload } =
         )
         .option('-V, --version', `show installed version`)
         .option('-c, --cwd <cwd>', 'directory containing a `dfx.json` file')
-        .option('-d, --deploy', `run \`dfx deploy\` on changed canister`)
+        .option('-d, --deploy', `run \`dfx deploy\` on file change`)
+        .option('-t, --test', `run unit tests on file change`)
         .option(
             '-y, --yes',
             `respond "yes" to reinstall prompts (may reset canister state)`,
         )
-        .option('-g, --generate', `run \`dfx generate\` on changed canister`)
+        .option('-g, --generate', `run \`dfx generate\` on file change`)
         .option('-x, --exec <exec>', `execute command on file change`)
         .option(
             '-v, --verbose',
@@ -65,6 +66,7 @@ const settings: Settings = {
     verbosity,
     generate: !!generate || defaultSettings.generate,
     deploy: !!deploy || defaultSettings.deploy,
+    test: !!test || defaultSettings.test,
     reinstall: !!yes || defaultSettings.reinstall,
     hotReload: !!hotReload || defaultSettings.hotReload,
 };

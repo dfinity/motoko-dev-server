@@ -1,4 +1,4 @@
 #! /usr/bin/env node
 'use strict';
 
-require('../lib/command');
+require('../lib/commands/mo-dev');
