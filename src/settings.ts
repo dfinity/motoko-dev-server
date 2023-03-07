@@ -6,6 +6,7 @@ export interface Settings {
     verbosity: number;
     generate: boolean;
     deploy: boolean;
+    test: boolean;
     reinstall: boolean;
     hotReload: boolean;
 }
@@ -18,6 +19,7 @@ export const defaultSettings: Settings = {
     verbosity: 0,
     generate: false,
     deploy: false,
+    test: false,
     reinstall: false,
     hotReload: false,
 };
