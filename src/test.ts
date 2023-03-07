@@ -1,6 +1,6 @@
-import { Settings } from '../lib/settings';
-import glob from 'fast-glob';
 import { execa } from 'execa';
+import glob from 'fast-glob';
+import { Settings } from './settings';
 
 export interface TestConfig {
     path: string;
