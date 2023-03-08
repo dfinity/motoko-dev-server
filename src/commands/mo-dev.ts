@@ -12,7 +12,7 @@ const examples: [string, string][] = [
     ['-g', 'generate TypeScript bindings on file change'],
 ];
 
-const { cwd, version, port, delay, exec, generate, deploy, yes, hotReload } =
+const { cwd, version, port, delay, exec, generate, deploy, test, yes, hotReload } =
     program
         .name('mo-dev')
         .description(
