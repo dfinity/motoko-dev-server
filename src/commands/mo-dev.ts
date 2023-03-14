@@ -24,7 +24,7 @@ const { cwd, version, port, delay, exec, generate, deploy, test, yes, hotReload 
                 .join('\n')}`,
         )
         .option('-V, --version', `show installed version`)
-        .option('-c, --cwd <cwd>', 'directory containing a `dfx.json` file')
+        .option('-C, --cwd <cwd>', 'directory containing a `dfx.json` file')
         .option('-d, --deploy', `run \`dfx deploy\` on file change`)
         .option('-t, --test', `run unit tests on file change`)
         .option(
@@ -54,12 +54,12 @@ const { cwd, version, port, delay, exec, generate, deploy, test, yes, hotReload 
         .opts();
 
 if (version) {
-    console.log('mo-dev', require('../package.json').version);
+    console.log('mo-dev', require('../../package.json').version);
     process.exit(0);
 }
 
 const settings: Settings = {
-    directory: resolve(cwd || '.'),
+    directory: resolve(cwd || defaultSettings.directory),
     port: port ? +port : defaultSettings.port,
     delay: !!delay || defaultSettings.delay,
     execute: exec || defaultSettings.execute,

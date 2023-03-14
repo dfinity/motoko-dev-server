@@ -21,10 +21,9 @@ export interface TestStatus {
     stderr: string;
 }
 
-export async function runTests(
-    config: TestConfig,
-    { directory }: Partial<Settings>,
-): Promise<TestStatus[]> {
+export async function runTests({
+    directory,
+}: Partial<Settings>): Promise<TestStatus[]> {
     const paths = await glob('**/*.test.mo', {
         cwd: directory,
         dot: false,

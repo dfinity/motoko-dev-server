@@ -8,7 +8,8 @@
     "types": "lib/index.d.ts",
     "bin": "bin/mo-dev.js",
     "scripts": {
-        "start": "ts-node src/command",
+        "start": "ts-node src/commands/mo-dev",
+        "mo-test": "ts-node src/commands/mo-test",
         "build:ts": "rimraf ./lib && tsc -p .",
         "build:wasm": "wasm-pack build wasm --target nodejs --out-dir pkg/nodejs",
         "build": "run-s build:wasm build:ts",
@@ -28,7 +29,7 @@
         "cookie-parser": "1.4.6",
         "cors": "2.8.5",
         "debug": "4.3.4",
-        "execa": "^7.0.0",
+        "execa": "5",
         "express": "4.18.2",
         "fast-glob": "3.2.12",
         "http-proxy-middleware": "2.0.6",
