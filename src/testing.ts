@@ -7,7 +7,9 @@ import { loadDfxSources } from './dfx';
 import { validateSettings } from './settings';
 import shellEscape from 'shell-escape';
 
-interface TestSettings {
+const testFilePattern = '*.test.mo';
+
+export interface TestSettings {
     directory: string;
     verbosity: number;
     testModes: TestMode[];
@@ -41,7 +43,7 @@ export async function runTests(
     const settings = (await validateSettings(options)) as TestSettings;
     const { directory } = settings;
 
-    const paths = await glob('**/*.test.mo', {
+    const paths = await glob(`**/${testFilePattern}`, {
         cwd: directory,
         dot: false,
         ignore: ['**/node_modules/**'],
@@ -56,7 +58,9 @@ export async function runTests(
 
     console.log(
         pc.dim(
-            `Found ${paths.length} unit test${paths.length === 1 ? '' : 's'}`,
+            `Running ${paths.length} unit test${
+                paths.length === 1 ? '' : 's'
+            } (${pc.dim(testFilePattern)})`,
         ),
     );
 

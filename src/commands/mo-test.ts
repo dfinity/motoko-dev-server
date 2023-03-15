@@ -64,11 +64,15 @@ runTests(settings, async (run) => {
     }
     const showTestMode =
         settings.testModes.length > 1 || !settings.testModes.includes(run.mode);
+    const decorateExtension = '.test.mo';
+    const decoratedPath = run.test.path.endsWith(decorateExtension)
+        ? `${run.test.path.slice(0, -decorateExtension.length)}`
+        : run.test.path;
     console.log(
         pc.white(
             `${statusEmojis[run.status] ?? defaultStatusEmoji} ${relative(
                 settings.directory,
-                run.test.path,
+                decoratedPath,
             )}${showTestMode ? pc.dim(` (${run.mode})`) : ''}`,
         ),
     );
