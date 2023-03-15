@@ -87,7 +87,7 @@ async function runTest(
                     path,
                     ...(dfxSources?.split(' ') || []), // TODO: account for spaces in file names
                 ],
-                { cwd: directory },
+                { cwd: directory, reject: false },
             );
 
             return {
@@ -106,6 +106,7 @@ async function runTest(
                 );
                 const wasmtimeResult = await execa('wasmtime', [path], {
                     cwd: directory,
+                    reject: false,
                 });
 
                 return {

@@ -46,6 +46,14 @@ const settings = {
 };
 
 runTests(settings, async (result) => {
+    if (result.status === 'errored' || result.status === 'failed') {
+        if (result.stdout?.trim()) {
+            console.error(result.stdout);
+        }
+        if (result.stderr?.trim()) {
+            console.error(result.stderr);
+        }
+    }
     console.log(
         `${statusEmojis[result.status] ?? defaultStatusEmoji} ${relative(
             settings.directory,

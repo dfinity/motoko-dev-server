@@ -38,6 +38,7 @@ export async function loadDfxSources(
     const packtoolResult = await execa(packtool, {
         shell: true,
         cwd: directory,
+        reject: false,
     });
     if (packtoolResult.failed) {
         throw new Error(
