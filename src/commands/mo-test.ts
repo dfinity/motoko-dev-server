@@ -2,6 +2,7 @@ import { program } from 'commander';
 import { defaultSettings } from '../settings';
 import { TestStatus, runTests, TestMode, asTestMode } from '../testing';
 import { resolve, relative } from 'path';
+import pc from 'picocolors';
 
 let verbosity = defaultSettings.verbosity;
 const increaseVerbosity = () => verbosity++;
@@ -51,19 +52,24 @@ const settings = {
     verbosity,
 };
 
-runTests(settings, async (result) => {
-    if (result.status === 'errored' || result.status === 'failed') {
-        if (result.stdout?.trim()) {
-            console.error(result.stdout);
+runTests(settings, async (run) => {
+    const important = run.status === 'errored' || run.status === 'failed';
+    if (important) {
+        if (run.stdout?.trim()) {
+            console.error(run.stdout);
         }
-        if (result.stderr?.trim()) {
-            console.error(result.stderr);
+        if (run.stderr?.trim()) {
+            console.error(pc.red(run.stderr));
         }
     }
+    const showTestMode =
+        settings.testModes.length > 1 || !settings.testModes.includes(run.mode);
     console.log(
-        `${statusEmojis[result.status] ?? defaultStatusEmoji} ${relative(
-            settings.directory,
-            result.test.path,
-        )}`,
+        pc.white(
+            `${statusEmojis[run.status] ?? defaultStatusEmoji} ${relative(
+                settings.directory,
+                run.test.path,
+            )}${showTestMode ? pc.dim(` (${run.mode})`) : ''}`,
+        ),
     );
 }).catch((err) => console.error(err.stack || err));
