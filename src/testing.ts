@@ -2,7 +2,7 @@ import execa from 'execa';
 import glob from 'fast-glob';
 import { join } from 'path';
 import { readFile, stat, unlink } from 'fs/promises';
-import { loadDfxConfig } from './dfx';
+import { findDfxConfig, findDfxSources } from './dfx';
 import pc from 'picocolors';
 import { validateSettings } from './settings';
 
@@ -49,7 +49,7 @@ export async function runTests(
 
     for (const path of paths) {
         const test = {
-            path,
+            path: join(directory, path),
         };
         const result = await runTest(test, settings);
         if (callback) {
@@ -65,13 +65,14 @@ async function runTest(
     const { path } = test;
 
     const dfxCache = await findDfxCacheLocation();
+    const sources = await findDfxSources(directory);
 
     const source = await readFile(path, 'utf8');
     const mode =
         /\/\/[^\S\n]*@testmode[^\S\n]*([a-zA-Z]+)/.exec(source)?.[1] ||
         'interpreter';
 
-    const dfxConfig = await loadDfxConfig(directory);
+    const dfxConfig = await findDfxConfig(directory);
 
     console.log('Running test:', path, `(${mode})`); ////
 
@@ -79,6 +80,7 @@ async function runTest(
         const interpretResult = await execa(join(dfxCache, 'moc'), [
             '-r',
             path,
+            ...(sources?.split(' ') || []), // TODO: account for spaces in file names
         ]);
 
         return {
@@ -102,9 +104,6 @@ async function runTest(
                 stdout: wasmtimeResult.stdout,
                 stderr: wasmtimeResult.stderr,
             };
-        } catch (err) {
-            console.log('ERR:::', err);
-            throw err;
         } finally {
             if ((await stat(wasmPath)).isFile()) {
                 await unlink(wasmPath);
