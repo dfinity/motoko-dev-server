@@ -76,4 +76,10 @@ runTests(settings, async (run) => {
             )}${showTestMode ? pc.dim(` (${run.mode})`) : ''}`,
         ),
     );
-}).catch((err) => console.error(err.stack || err));
+})
+    .then((runs) => {
+        if (!runs.length) {
+            process.exit(1);
+        }
+    })
+    .catch((err) => console.error(err.stack || err));

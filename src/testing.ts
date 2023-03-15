@@ -57,22 +57,23 @@ export async function runTests(
     }
 
     console.log(
-        pc.dim(
-            `Running ${paths.length} unit test${
-                paths.length === 1 ? '' : 's'
-            } (${pc.dim(testFilePattern)})`,
-        ),
+        `Running ${paths.length} unit test${
+            paths.length === 1 ? '' : 's'
+        } ${pc.dim(`(${testFilePattern})`)}`,
     );
 
+    const runs: TestRun[] = [];
     for (const path of paths) {
         const test = {
             path: join(directory, path),
         };
-        const result = await runTest(test, settings, { dfxCache, dfxSources });
+        const run = await runTest(test, settings, { dfxCache, dfxSources });
+        runs.push(run);
         if (callback) {
-            await callback(result);
+            await callback(run);
         }
     }
+    return runs;
 }
 
 async function runTest(
