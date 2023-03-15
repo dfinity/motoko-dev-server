@@ -11,7 +11,7 @@ const waitUntilLoaded = async () => {
 
 describe('mo-dev', () => {
     test('detects Motoko files', async () => {
-        const { watcher, close } = devServer({
+        const { watcher, close } = await devServer({
             directory: projectPath,
         });
 
@@ -30,6 +30,8 @@ describe('mo-dev', () => {
                 'dfx.json',
                 'motoko_canister/Main.mo',
                 'motoko_canister/lib/Echo.mo',
+                'motoko_canister/test/A.test.mo',
+                'motoko_canister/test/B.test.mo',
                 'vm/vm_canister/Main.mo',
             ]);
         } finally {
@@ -43,7 +45,7 @@ describe('mo-dev', () => {
             unlinkSync(outputPath);
         }
 
-        const { close } = devServer({
+        const { close } = await devServer({
             directory: projectPath,
             execute: `echo "ran command" >> generated.txt`,
         });
@@ -65,7 +67,7 @@ describe('mo-dev', () => {
             unlinkSync(declarationPath);
         }
 
-        const { close } = devServer({
+        const { close } = await devServer({
             directory: projectPath,
             generate: true,
         });
@@ -80,7 +82,7 @@ describe('mo-dev', () => {
 
     test('starts the VM server on a custom port', async () => {
         const port = 56789;
-        const { close } = devServer({
+        const { close } = await devServer({
             directory: join(projectPath, 'vm'),
             hotReload: true,
             port,
