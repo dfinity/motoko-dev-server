@@ -60,7 +60,7 @@ export async function runTests(
 
 async function runTest(
     test: Test,
-    { directory }: TestSettings,
+    { directory, verbosity }: TestSettings,
 ): Promise<TestState> {
     const { path } = test;
 
@@ -74,7 +74,9 @@ async function runTest(
 
     const dfxConfig = await findDfxConfig(directory);
 
-    console.log('Running test:', path, `(${mode})`); ////
+    if (verbosity >= 1) {
+        console.log(pc.blue(`Running test: ${path} (${mode})`)); ////
+    }
 
     if (mode === 'interpreter') {
         const interpretResult = await execa(join(dfxCache, 'moc'), [

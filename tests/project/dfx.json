@@ -8,5 +8,10 @@
             "type": "motoko",
             "main": "vm/vm_canister/Main.mo"
         }
+    },
+    "defaults": {
+        "build": {
+            "packtool": "mops sources"
+        }
     }
 }
