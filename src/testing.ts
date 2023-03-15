@@ -5,6 +5,7 @@ import { join, relative, basename, dirname } from 'path';
 import pc from 'picocolors';
 import { loadDfxSources } from './dfx';
 import { validateSettings } from './settings';
+import shellEscape from 'shell-escape';
 
 interface TestSettings {
     directory: string;
@@ -48,6 +49,10 @@ export async function runTests(
 
     const dfxCache = await findDfxCacheLocation(directory);
     const dfxSources = await loadDfxSources(directory);
+
+    if (settings.verbosity >= 1) {
+        console.log(pc.magenta(dfxSources));
+    }
 
     console.log(
         pc.dim(
@@ -98,13 +103,12 @@ async function runTest(
         try {
             if (mode === 'interpreter') {
                 const interpretResult = await execa(
-                    join(dfxCache, 'moc'),
-                    [
+                    `${shellEscape([
+                        join(dfxCache, 'moc'),
                         '-r',
                         path,
-                        ...(dfxSources?.split(' ') || []), // TODO: account for spaces in file names
-                    ],
-                    { cwd: directory, reject: false },
+                    ])} ${dfxSources}`,
+                    { shell: true, cwd: directory, reject: false },
                 );
                 return {
                     test,
@@ -114,17 +118,18 @@ async function runTest(
                     stderr: interpretResult.stderr,
                 };
             } else if (mode === 'wasi') {
-                const extensionRegex = /\.[a-z]+$/i;
-                if (!extensionRegex.test(path)) {
-                    throw new Error(`Unrecognized file extension: ${path}`);
-                }
-                const wasmPath = path.replace(extensionRegex, '.wasm');
+                const wasmPath = `${path.replace(/\.mo$/i, '')}.wasm`;
 
                 try {
                     await execa(
-                        join(dfxCache, 'moc'),
-                        [ '-wasi-system-api', basename(path)],
-                        { cwd: dirname(path) },
+                        `${shellEscape([
+                            join(dfxCache, 'moc'),
+                            '-wasi-system-api',
+                            '-o',
+                            wasmPath,
+                            path,
+                        ])} ${dfxSources}`,
+                        { shell: true, cwd: directory },
                     );
                     const wasmtimeResult = await execa(
                         'wasmtime',

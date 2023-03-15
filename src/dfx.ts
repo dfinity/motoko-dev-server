@@ -45,5 +45,5 @@ export async function loadDfxSources(
             `Error while running 'defaults.build.packtool' command from dfx.json file in ${directory}`,
         );
     }
-    return packtoolResult.stdout;
+    return packtoolResult.stdout.replace('\n', ' ');
 }
