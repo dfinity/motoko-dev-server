@@ -67,6 +67,7 @@ export async function watch({
     generate,
     deploy,
     reinstall,
+    test,
     hotReload,
 }: Settings) {
     const log = (level: number, ...args: any[]) => {
@@ -123,6 +124,10 @@ export async function watch({
             console.error(
                 `Error while loading 'dfx.json' file:\n${err.message || err}`,
             );
+        }
+
+        if (test) {
+            // TODO
         }
 
         if (deploy || reinstall) {
