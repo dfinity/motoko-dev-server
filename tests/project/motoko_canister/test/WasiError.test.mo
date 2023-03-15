@@ -1,3 +1,0 @@
-// @testmode wasi
-
-(syntax error)

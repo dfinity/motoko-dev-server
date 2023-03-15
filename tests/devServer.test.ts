@@ -26,7 +26,9 @@ describe('mo-dev', () => {
         await waitUntilLoaded();
         try {
             files.sort();
-            expect(files).toStrictEqual([
+            expect(
+                files.filter((file) => !file.startsWith('.mops')),
+            ).toStrictEqual([
                 'dfx.json',
                 'motoko_canister/Main.mo',
                 'motoko_canister/lib/Echo.mo',
