@@ -1,4 +1,4 @@
-import { findDfxConfig } from './dfx';
+import { loadDfxConfig } from './dfx';
 import pc from 'picocolors';
 
 export interface Settings {
@@ -36,7 +36,7 @@ export async function validateSettings(
         ...defaultSettings,
         ...settings,
     };
-    if (!(await findDfxConfig(resolvedSettings.directory))) {
+    if (!(await loadDfxConfig(resolvedSettings.directory))) {
         console.error(
             pc.yellow(
                 `Please specify a directory containing a \`dfx.json\` config file.`,

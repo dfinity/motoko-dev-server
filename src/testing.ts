@@ -1,9 +1,9 @@
 import execa from 'execa';
 import glob from 'fast-glob';
-import { join } from 'path';
 import { readFile, stat, unlink } from 'fs/promises';
-import { findDfxConfig, findDfxSources } from './dfx';
+import { join, relative } from 'path';
 import pc from 'picocolors';
+import { loadDfxSources } from './dfx';
 import { validateSettings } from './settings';
 
 interface TestSettings {
@@ -64,26 +64,30 @@ async function runTest(
 ): Promise<TestState> {
     const { path } = test;
 
-    const dfxCache = await findDfxCacheLocation();
-    const sources = await findDfxSources(directory);
+    const dfxCache = await findDfxCacheLocation(directory);
+    const dfxSources = await loadDfxSources(directory);
 
     const source = await readFile(path, 'utf8');
     const mode =
         /\/\/[^\S\n]*@testmode[^\S\n]*([a-zA-Z]+)/.exec(source)?.[1] ||
         'interpreter';
 
-    const dfxConfig = await findDfxConfig(directory);
-
     if (verbosity >= 1) {
-        console.log(pc.blue(`Running test: ${path} (${mode})`)); ////
+        console.log(
+            pc.blue(`Running test: ${relative(directory, path)} (${mode})`),
+        );
     }
 
     if (mode === 'interpreter') {
-        const interpretResult = await execa(join(dfxCache, 'moc'), [
-            '-r',
-            path,
-            ...(sources?.split(' ') || []), // TODO: account for spaces in file names
-        ]);
+        const interpretResult = await execa(
+            join(dfxCache, 'moc'),
+            [
+                '-r',
+                path,
+                ...(dfxSources?.split(' ') || []), // TODO: account for spaces in file names
+            ],
+            { cwd: directory },
+        );
 
         return {
             test,
@@ -94,11 +98,22 @@ async function runTest(
     } else if (mode === 'wasi') {
         const wasmPath = path.replace(/\.[a-z]$/i, '.wasm');
         try {
-            const compileResult = await execa(join(dfxCache, 'moc'), [
-                '--wasi-system-api',
-                path,
-            ]);
-            const wasmtimeResult = await execa('wasmtime', [path]);
+            const compileResult = await execa(
+                join(dfxCache, 'moc'),
+                ['--wasi-system-api', path],
+                { cwd: directory },
+            );
+            if (compileResult.failed) {
+                return {
+                    test,
+                    status: 'errored',
+                    stdout: compileResult.stdout,
+                    stderr: compileResult.stderr,
+                };
+            }
+            const wasmtimeResult = await execa('wasmtime', [path], {
+                cwd: directory,
+            });
 
             return {
                 test,
@@ -116,11 +131,15 @@ async function runTest(
     }
 }
 
-let dfxCacheLocation: string | undefined;
-async function findDfxCacheLocation(): Promise<string> {
-    if (!dfxCacheLocation) {
-        const result = await execa('dfx', ['cache', 'show']);
-        dfxCacheLocation = result.stdout;
+const dfxCacheLocationMap = new Map<string, string>();
+async function findDfxCacheLocation(directory: string): Promise<string> {
+    let cacheLocation = dfxCacheLocationMap.get(directory);
+    if (!cacheLocation) {
+        const result = await execa('dfx', ['cache', 'show'], {
+            cwd: directory,
+        });
+        cacheLocation = result.stdout;
+        dfxCacheLocationMap.set(directory, cacheLocation);
     }
-    return dfxCacheLocation;
+    return cacheLocation;
 }

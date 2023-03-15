@@ -1,7 +1,7 @@
 import { serve } from './server';
 import { Settings, defaultSettings, validateSettings } from './settings';
 import { watch } from './watch';
-import { findDfxConfig } from './dfx';
+import { loadDfxConfig } from './dfx';
 import pc from 'picocolors';
 import wasm from './wasm';
 

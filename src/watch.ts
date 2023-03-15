@@ -5,7 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import pc from 'picocolors';
 import { Canister, getDfxCanisters } from './canister';
-import { findDfxConfig } from './dfx';
+import { loadDfxConfig } from './dfx';
 import { Settings } from './settings';
 import { getVirtualFile } from './utils/motoko';
 import wasm from './wasm';
@@ -109,7 +109,7 @@ export async function watch({
 
     const updateDfxConfig = async () => {
         try {
-            const dfxConfig = await findDfxConfig(directory);
+            const dfxConfig = await loadDfxConfig(directory);
             if (!dfxConfig) {
                 console.error(
                     `${pc.bold(

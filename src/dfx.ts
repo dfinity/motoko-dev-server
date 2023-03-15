@@ -17,7 +17,7 @@ export interface CanisterConfig {
     main?: string;
 }
 
-export async function findDfxConfig(
+export async function loadDfxConfig(
     directory: string,
 ): Promise<DfxConfig | undefined> {
     const dfxPath = resolve(directory, 'dfx.json');
@@ -27,15 +27,18 @@ export async function findDfxConfig(
     return <DfxConfig>JSON.parse(readFileSync(dfxPath, 'utf8'));
 }
 
-export async function findDfxSources(
+export async function loadDfxSources(
     directory: string,
 ): Promise<string | undefined> {
-    const dfxConfig = await findDfxConfig(directory);
+    const dfxConfig = await loadDfxConfig(directory);
     const packtool = dfxConfig?.defaults?.build?.packtool;
     if (!packtool) {
         return;
     }
-    const packtoolResult = await execa(packtool);
+    const packtoolResult = await execa(packtool, {
+        shell: true,
+        cwd: directory,
+    });
     if (packtoolResult.failed) {
         throw new Error(
             `Error while running 'defaults.build.packtool' command from dfx.json file in ${directory}`,
