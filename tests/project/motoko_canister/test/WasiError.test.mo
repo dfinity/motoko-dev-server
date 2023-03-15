@@ -1,1 +1,3 @@
-(syntax error)
+// @testmode wasi
+
+ExpectedError

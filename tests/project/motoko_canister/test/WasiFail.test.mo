@@ -1,1 +1,3 @@
-assert 1 == 2
+// @testmode wasi
+
+assert 1 == 2;

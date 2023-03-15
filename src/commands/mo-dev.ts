@@ -2,14 +2,19 @@ import { program, Option } from 'commander';
 import { resolve } from 'path';
 import { Settings, defaultSettings } from '../settings';
 import devServer from '..';
+import { TestMode, asTestMode } from '../testing';
 
 let verbosity = defaultSettings.verbosity;
 const increaseVerbosity = () => verbosity++;
+
+const testModes: TestMode[] = [];
+const addTestMode = (mode: string) => testModes.push(asTestMode(mode));
 
 const examples: [string, string][] = [
     ['-r', 'redeploy canisters on file change'],
     ['-d', 'upgrade canisters on file change'],
     ['-g', 'generate TypeScript bindings on file change'],
+    ['-t', 'run unit tests on file change'],
 ];
 
 const {
@@ -21,7 +26,6 @@ const {
     generate,
     deploy,
     test,
-    testMode,
     yes,
     hotReload,
 } = program
@@ -38,7 +42,11 @@ const {
     .option('-C, --cwd <cwd>', 'directory containing a `dfx.json` file')
     .option('-d, --deploy', `run \`dfx deploy\` on file change`)
     .option('-t, --test', `run unit tests on file change`)
-    .option('--testmode', `default test mode (interpreter, wasi)`)
+    .option(
+        '--testmode <mode>',
+        `default test mode (interpreter, wasi)`,
+        addTestMode,
+    )
     .option(
         '-y, --yes',
         `respond "yes" to reinstall prompts (may reset canister state)`,
@@ -75,7 +83,7 @@ const settings: Settings = {
     generate: !!generate || defaultSettings.generate,
     deploy: !!deploy || defaultSettings.deploy,
     test: !!test || defaultSettings.test,
-    testMode: testMode || defaultSettings.testMode,
+    testModes: testModes.length ? testModes : defaultSettings.testModes,
     reinstall: !!yes || defaultSettings.reinstall,
     hotReload: !!hotReload || defaultSettings.hotReload,
 };

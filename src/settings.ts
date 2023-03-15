@@ -1,5 +1,6 @@
-import { loadDfxConfig } from './dfx';
 import pc from 'picocolors';
+import { loadDfxConfig } from './dfx';
+import { TestMode } from './testing';
 
 export interface Settings {
     directory: string;
@@ -10,7 +11,7 @@ export interface Settings {
     generate: boolean;
     deploy: boolean;
     test: boolean;
-    testMode: string;
+    testModes: TestMode[];
     reinstall: boolean;
     hotReload: boolean;
 }
@@ -24,7 +25,7 @@ export const defaultSettings: Settings = {
     generate: false,
     deploy: false,
     test: false,
-    testMode: 'interpreter',
+    testModes: ['interpreter'],
     reinstall: false,
     hotReload: false,
 };

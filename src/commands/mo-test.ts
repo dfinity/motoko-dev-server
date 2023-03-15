@@ -1,16 +1,18 @@
 import { program } from 'commander';
 import { defaultSettings } from '../settings';
-import { TestStatus, runTests } from '../testing';
+import { TestStatus, runTests, TestMode, asTestMode } from '../testing';
 import { resolve, relative } from 'path';
-import pc from 'picocolors';
 
 let verbosity = defaultSettings.verbosity;
 const increaseVerbosity = () => verbosity++;
 
+const testModes: TestMode[] = [];
+const addTestMode = (mode: string) => testModes.push(asTestMode(mode));
+
 const examples: [string, string][] = [['-C', 'test/']];
 
-const { cwd, version, testMode } = program
-    .name('mo-dev')
+const { cwd, version } = program
+    .name('mo-test')
     .description(
         `Examples:\n${examples
             .map(
@@ -21,7 +23,11 @@ const { cwd, version, testMode } = program
     )
     .option('-V, --version', `show installed version`)
     .option('-C, --cwd <cwd>', 'directory containing a `dfx.json` file')
-    .option('--testmode', `default test mode (interpreter, wasi)`)
+    .option(
+        '--testmode <mode>',
+        `default test mode (interpreter, wasi)`,
+        addTestMode,
+    )
     .option('-v, --verbose', `show more details in console`, increaseVerbosity)
     .parse()
     .opts();
@@ -41,7 +47,7 @@ const statusEmojis: Record<TestStatus, string> = {
 
 const settings = {
     directory: resolve(cwd || defaultSettings.directory),
-    testMode: testMode || defaultSettings.testMode,
+    testModes: testModes.length ? testModes : defaultSettings.testModes,
     verbosity,
 };
 
