@@ -11,10 +11,12 @@ export interface CanisterConfig {
     main?: string;
 }
 
-export function loadDfxConfig(directory: string): DfxConfig | undefined {
+export async function loadDfxConfig(directory: string): Promise<DfxConfig | undefined> {
     const dfxPath = resolve(directory, 'dfx.json');
     if (!existsSync(dfxPath)) {
         return;
     }
     return <DfxConfig>JSON.parse(readFileSync(dfxPath, 'utf8'));
 }
+
+export async function 

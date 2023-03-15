@@ -60,7 +60,7 @@ export function findCanister(alias: string): Canister | undefined {
     return canisters.find((c) => c.alias === alias);
 }
 
-export function watch({
+export async function watch({
     directory,
     execute,
     verbosity,
@@ -107,9 +107,9 @@ export function watch({
         }
     };
 
-    const updateDfxConfig = () => {
+    const updateDfxConfig = async () => {
         try {
-            const dfxConfig = loadDfxConfig(directory);
+            const dfxConfig = await loadDfxConfig(directory);
             if (!dfxConfig) {
                 console.error(
                     `${pc.bold(
@@ -177,7 +177,7 @@ export function watch({
             });
         }
     };
-    updateDfxConfig();
+    await updateDfxConfig();
 
     const runCommand = (
         command: string,
@@ -406,7 +406,7 @@ export function watch({
 
     const dfxWatcher = chokidar
         .watch('./dfx.json', { cwd: directory, ignored: watchIgnore })
-        .on('change', (path) => {
+        .on('change', async (path) => {
             if (!path.endsWith('dfx.json')) {
                 console.warn('Received unexpected `dfx.json` path:', path);
                 return;
@@ -414,7 +414,7 @@ export function watch({
             notifyChange();
             console.log(pc.blue(`${pc.bold('change')} ${path}`));
             const previousCanisters = canisters;
-            updateDfxConfig();
+            await updateDfxConfig();
             previousCanisters?.forEach((canister) => {
                 if (!canisters?.some((c) => c.alias === canister.alias)) {
                     removeCanister(canister);

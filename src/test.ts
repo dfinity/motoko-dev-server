@@ -1,10 +1,14 @@
 import execa from 'execa';
 import glob from 'fast-glob';
 import { join } from 'path';
-import { readFile } from 'fs/promises';
+import { readFile, stat, unlink } from 'fs/promises';
+import { loadDfxConfig } from './dfx';
+import pc from 'picocolors';
 
 interface TestSettings {
     directory: string;
+    verbosity: number;
+    testMode: string | undefined;
 }
 
 export interface Test {
@@ -16,95 +20,96 @@ export type Status = 'passed' | 'failed' | 'errored' | 'skipped';
 export interface TestState {
     test: Test;
     status: Status;
-    message: string;
+    message?: string | undefined;
     // stdout: string;
     // stderr: string;
 }
 
-export async function runTests({
-    directory,
-}: TestSettings): Promise<TestState[]> {
+export async function* runTests(settings: TestSettings) {
+    const { directory } = settings;
+
     const paths = await glob('**/*.test.mo', {
         cwd: directory,
         dot: false,
         ignore: ['**/node_modules/**'],
     });
 
-    console.log(paths); //////
-
-    const dfxShowResult = await execa('dfx', ['cache', 'show']);
-    const cacheLocation = dfxShowResult.stdout;
+    console.log(
+        pc.dim(
+            `Found ${paths.length} unit test${paths.length === 1 ? '' : 's'}`,
+        ),
+    );
 
     // console.log(cacheLocation); ////
 
-    const results: TestState[] = [];
     for (const path of paths) {
-        console.log('::', path);
-
-        await runTest({
+        const test = {
             path,
-        });
+        };
+        yield runTest(test, settings);
     }
-    return results;
+}
 
-    async function runTest({ path }: Test): Promise<TestState> {
-        const source = await readFile(path, 'utf8');
-        const mode =
-            /\/\/[^\S\n]*@testmode[^\S\n]*([a-zA-Z]+)/.exec(source)?.[1] ||
-            'interpreter';
+async function runTest(
+    test: Test,
+    { directory }: TestSettings,
+): Promise<TestState> {
+    const { path } = test;
 
-        console.log('Running test:', path, `(${mode})`);
+    const dfxCache = await findDfxCacheLocation();
 
-        if (mode === 'interpreter') {
-            // Run tests via moc.js interpreter
-            // motoko.setRunStepLimit(100_000_000);
-            // const output = motoko.run(virtualPath);
-            // return {
-            //     passed: output.result
-            //         ? !output.result.error
-            //         : !output.stderr.includes('error'), // fallback for previous moc.js versions
-            //     stdout: output.stdout,
-            //     stderr: output.stderr,
-            // };
+    const source = await readFile(path, 'utf8');
+    const mode =
+        /\/\/[^\S\n]*@testmode[^\S\n]*([a-zA-Z]+)/.exec(source)?.[1] ||
+        'interpreter';
 
-        } else if (mode === 'wasmer') {
-            // Run tests via Wasmer
-            const start = Date.now();
-            const wasiResult = motoko.wasm(virtualPath, 'wasi');
-            console.log('Compile time:', Date.now() - start);
+    const dfxConfig = await loadDfxConfig(directory);
 
-            const WebAssembly = (global as any).WebAssembly;
-            const module = await (
-                WebAssembly.compileStreaming || WebAssembly.compile
-            )(wasiResult.wasm);
-            await initWASI();
-            const wasi = new WASI({});
-            await wasi.instantiate(module, {});
-            const exitCode = wasi.start();
-            const stdout = wasi.getStdoutString();
-            const stderr = wasi.getStderrString();
-            wasi.free();
-            if (exitCode !== 0) {
-                console.log(stdout);
-                console.error(stderr);
-                console.log('Exit code:', exitCode);
-            }
-            return {
-                passed: exitCode === 0,
-                stdout,
-                stderr,
-            };
-        } else {
-            throw new Error(`Invalid test mode: '${mode}'`);
-        }
+    console.log('Running test:', path, `(${mode})`); ////
 
-        const compileResult = await execa(join(cacheLocation, 'moc'), [
-            '--wasi-system-api',
+    if (mode === 'interpreter') {
+        const interpretResult = await execa(join(dfxCache, 'moc'), [
+            '-r',
             path,
         ]);
 
         return {
-            status: 'passed',
+            test,
+            status: interpretResult.failed ? 'failed' : 'passed',
         };
+    } else if (mode === 'wasi') {
+        const wasmPath = path.replace(/\.[a-z]$/i, '.wasm');
+        try {
+            const compileResult = await execa(join(dfxCache, 'moc'), [
+                '--wasi-system-api',
+                path,
+            ]);
+            const wasmtimeResult = await execa('wasmtime', [path]);
+
+            console.log('WASMTIME:', wasmtimeResult); ///
+
+            return {
+                test,
+                status: wasmtimeResult.failed ? 'failed' : 'passed',
+            };
+        } catch (err) {
+            console.log('ERR:::', err);
+            throw err;
+        } finally {
+            if ((await stat(wasmPath)).isFile()) {
+                await unlink(wasmPath);
+            }
+        }
+    } else {
+        throw new Error(`Invalid test mode: '${mode}'`);
     }
+}
+
+let dfxCacheLocation: string | undefined;
+async function findDfxCacheLocation(): Promise<string> {
+    if (!dfxCacheLocation) {
+        const result = await execa('dfx', ['cache', 'show']);
+        dfxCacheLocation = result.stdout;
+    }
+    return dfxCacheLocation;
 }

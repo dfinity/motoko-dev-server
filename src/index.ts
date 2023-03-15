@@ -7,14 +7,14 @@ import wasm from './wasm';
 
 export { Settings, defaultSettings };
 
-export default function devServer(options: Partial<Settings> = {}) {
+export default async function devServer(options: Partial<Settings> = {}) {
     const settings: Settings = {
         ...defaultSettings,
         ...options,
     };
     wasm.update_settings(settings);
 
-    if (!loadDfxConfig(settings.directory)) {
+    if (!await loadDfxConfig(settings.directory)) {
         console.error(
             pc.yellow(
                 `Please specify a directory containing a \`dfx.json\` config file.`,

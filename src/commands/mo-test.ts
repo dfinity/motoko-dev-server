@@ -8,7 +8,7 @@ const increaseVerbosity = () => verbosity++;
 
 const examples: [string, string][] = [['-C', 'test/']];
 
-const { cwd, version } = program
+const { cwd, version ,testMode} = program
     .name('mo-dev')
     .description(
         `Examples:\n${examples
@@ -19,7 +19,9 @@ const { cwd, version } = program
             .join('\n')}`,
     )
     .option('-V, --version', `show installed version`)
-    .option('-C, --cwd', `test root directory`)
+    .option('-C, --cwd <cwd>', 'directory containing a `dfx.json` file')
+    .option('-v, --verbose', `show more details in console`, increaseVerbosity)
+    .option('--testmode', `default test mode (interpreter, wasi)`)
     .parse()
     .opts();
 
@@ -30,4 +32,6 @@ if (version) {
 
 runTests({
     directory: resolve(cwd || defaultSettings.directory),
+    verbosity,
+    testMode,
 });
