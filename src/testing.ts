@@ -60,7 +60,7 @@ export async function runTests(
 
 async function runTest(
     test: Test,
-    { directory, verbosity }: TestSettings,
+    { directory, verbosity, testMode }: TestSettings,
 ): Promise<TestState> {
     const { path } = test;
 
@@ -70,7 +70,8 @@ async function runTest(
     const source = await readFile(path, 'utf8');
     const mode =
         /\/\/[^\S\n]*@testmode[^\S\n]*([a-zA-Z]+)/.exec(source)?.[1] ||
-        'interpreter';
+        testMode ||
+        '';
 
     if (verbosity >= 1) {
         console.log(
