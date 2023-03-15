@@ -21,6 +21,7 @@ const {
     generate,
     deploy,
     test,
+    testMode,
     yes,
     hotReload,
 } = program
@@ -37,6 +38,7 @@ const {
     .option('-C, --cwd <cwd>', 'directory containing a `dfx.json` file')
     .option('-d, --deploy', `run \`dfx deploy\` on file change`)
     .option('-t, --test', `run unit tests on file change`)
+    .option('--testmode', `default test mode (interpreter, wasi)`)
     .option(
         '-y, --yes',
         `respond "yes" to reinstall prompts (may reset canister state)`,
@@ -73,6 +75,7 @@ const settings: Settings = {
     generate: !!generate || defaultSettings.generate,
     deploy: !!deploy || defaultSettings.deploy,
     test: !!test || defaultSettings.test,
+    testMode: testMode || defaultSettings.testMode,
     reinstall: !!yes || defaultSettings.reinstall,
     hotReload: !!hotReload || defaultSettings.hotReload,
 };

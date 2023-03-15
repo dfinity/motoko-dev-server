@@ -4,6 +4,7 @@ import { join } from 'path';
 import { readFile, stat, unlink } from 'fs/promises';
 import { loadDfxConfig } from './dfx';
 import pc from 'picocolors';
+import { validateSettings } from './settings';
 
 interface TestSettings {
     directory: string;
@@ -15,17 +16,21 @@ export interface Test {
     path: string;
 }
 
-export type Status = 'passed' | 'failed' | 'errored' | 'skipped';
+export type TestStatus = 'passed' | 'failed' | 'errored' | 'skipped';
 
 export interface TestState {
     test: Test;
-    status: Status;
+    status: TestStatus;
     message?: string | undefined;
-    // stdout: string;
-    // stderr: string;
+    stdout: string;
+    stderr: string;
 }
 
-export async function* runTests(settings: TestSettings) {
+export async function runTests(
+    options: Partial<TestSettings>,
+    callback?: (result: TestState) => void | Promise<void>,
+) {
+    const settings = (await validateSettings(options)) as TestSettings;
     const { directory } = settings;
 
     const paths = await glob('**/*.test.mo', {
@@ -46,7 +51,10 @@ export async function* runTests(settings: TestSettings) {
         const test = {
             path,
         };
-        yield runTest(test, settings);
+        const result = await runTest(test, settings);
+        if (callback) {
+            await callback(result);
+        }
     }
 }
 
@@ -76,6 +84,8 @@ async function runTest(
         return {
             test,
             status: interpretResult.failed ? 'failed' : 'passed',
+            stdout: interpretResult.stdout,
+            stderr: interpretResult.stderr,
         };
     } else if (mode === 'wasi') {
         const wasmPath = path.replace(/\.[a-z]$/i, '.wasm');
@@ -86,11 +96,11 @@ async function runTest(
             ]);
             const wasmtimeResult = await execa('wasmtime', [path]);
 
-            console.log('WASMTIME:', wasmtimeResult); ///
-
             return {
                 test,
                 status: wasmtimeResult.failed ? 'failed' : 'passed',
+                stdout: wasmtimeResult.stdout,
+                stderr: wasmtimeResult.stderr,
             };
         } catch (err) {
             console.log('ERR:::', err);

@@ -1,14 +1,15 @@
 import { program } from 'commander';
 import { defaultSettings } from '../settings';
-import { runTests } from '../test';
+import { TestStatus, runTests } from '../test';
 import { resolve } from 'path';
+import pc from 'picocolors';
 
 let verbosity = defaultSettings.verbosity;
 const increaseVerbosity = () => verbosity++;
 
 const examples: [string, string][] = [['-C', 'test/']];
 
-const { cwd, version ,testMode} = program
+const { cwd, version, testMode } = program
     .name('mo-dev')
     .description(
         `Examples:\n${examples
@@ -20,8 +21,8 @@ const { cwd, version ,testMode} = program
     )
     .option('-V, --version', `show installed version`)
     .option('-C, --cwd <cwd>', 'directory containing a `dfx.json` file')
-    .option('-v, --verbose', `show more details in console`, increaseVerbosity)
     .option('--testmode', `default test mode (interpreter, wasi)`)
+    .option('-v, --verbose', `show more details in console`, increaseVerbosity)
     .parse()
     .opts();
 
@@ -30,8 +31,27 @@ if (version) {
     process.exit(0);
 }
 
-runTests({
-    directory: resolve(cwd || defaultSettings.directory),
-    verbosity,
-    testMode,
-});
+const defaultStatusEmoji = '❓';
+const statusEmojis: Record<TestStatus, string> = {
+    passed: '✅',
+    failed: '❌',
+    skipped: '⏩',
+    errored: '❗',
+};
+
+runTests(
+    {
+        directory: resolve(cwd || defaultSettings.directory),
+        testMode: testMode || defaultSettings.testMode,
+        verbosity,
+    },
+    async (result) => {
+        console.log(
+            pc.dim(
+                `${statusEmojis[result.status] ?? defaultStatusEmoji} ${
+                    result.test.path
+                }`,
+            ),
+        );
+    },
+).catch((err) => console.error(err.stack || err));
