@@ -78,7 +78,6 @@ async function runTest(
     const modeRegex = /\/\/[^\S\n]*@testmode[^\S\n]*([a-zA-Z]+)/g;
     let nextMode: string;
     while ((nextMode = modeRegex.exec(source)?.[1])) {
-        console.log('NEXT MODE', nextMode);
         modes.push(asTestMode(nextMode));
     }
     if (!modes.length) {
@@ -124,14 +123,14 @@ async function runTest(
                 try {
                     await execa(
                         join(dfxCache, 'moc'),
-                        ['-wasi-system-api', path],
-                        { cwd: directory },
+                        [ '-wasi-system-api', basename(path)],
+                        { cwd: dirname(path) },
                     );
                     const wasmtimeResult = await execa(
                         'wasmtime',
                         [basename(wasmPath)],
                         {
-                            cwd: dirname(wasmPath),
+                            cwd: dirname(path),
                             reject: false,
                         },
                     );
@@ -143,9 +142,9 @@ async function runTest(
                         stderr: wasmtimeResult.stderr,
                     };
                 } finally {
-                    // if ((await stat(wasmPath)).isFile()) {
-                    //     await unlink(wasmPath);
-                    // }
+                    if ((await stat(wasmPath)).isFile()) {
+                        await unlink(wasmPath);
+                    }
                 }
             } else {
                 throw new Error(`Invalid test mode: '${mode}'`);
