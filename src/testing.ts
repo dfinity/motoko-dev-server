@@ -89,7 +89,6 @@ async function runTest(
                 ],
                 { cwd: directory, reject: false },
             );
-
             return {
                 test,
                 status: interpretResult.failed ? 'failed' : 'passed',
@@ -99,7 +98,7 @@ async function runTest(
         } else if (mode === 'wasi') {
             const wasmPath = path.replace(/\.[a-z]$/i, '.wasm');
             try {
-                const compileResult = await execa(
+                await execa(
                     join(dfxCache, 'moc'),
                     ['--wasi-system-api', path],
                     { cwd: directory },
@@ -108,7 +107,6 @@ async function runTest(
                     cwd: directory,
                     reject: false,
                 });
-
                 return {
                     test,
                     status: wasmtimeResult.failed ? 'failed' : 'passed',
