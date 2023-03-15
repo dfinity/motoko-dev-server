@@ -11,7 +11,7 @@
     },
     "defaults": {
         "build": {
-            "packtool": "npx --no ic-mops sources"
+            "packtool": "mops sources"
         }
     }
 }
