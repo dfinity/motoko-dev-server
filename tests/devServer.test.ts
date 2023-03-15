@@ -30,8 +30,11 @@ describe('mo-dev', () => {
                 'dfx.json',
                 'motoko_canister/Main.mo',
                 'motoko_canister/lib/Echo.mo',
-                'motoko_canister/test/A.test.mo',
-                'motoko_canister/test/B.test.mo',
+                'motoko_canister/test/DefaultFail.test.mo',
+                'motoko_canister/test/DefaultPass.test.mo',
+                'motoko_canister/test/WasiError.test.mo',
+                'motoko_canister/test/WasiFail.test.mo',
+                'motoko_canister/test/WasiPass.test.mo',
                 'vm/vm_canister/Main.mo',
             ]);
         } finally {
