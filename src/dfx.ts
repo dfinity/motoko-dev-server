@@ -18,5 +18,3 @@ export async function loadDfxConfig(directory: string): Promise<DfxConfig | unde
     }
     return <DfxConfig>JSON.parse(readFileSync(dfxPath, 'utf8'));
 }
-
-export async function 

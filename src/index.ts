@@ -27,7 +27,7 @@ export default async function devServer(options: Partial<Settings> = {}) {
     }
 
     const output = {
-        watcher: watch(settings),
+        watcher: await watch(settings),
         server: settings.hotReload ? serve(settings) : null,
         close() {
             output.watcher.close();
