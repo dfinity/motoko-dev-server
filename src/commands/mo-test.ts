@@ -1,6 +1,6 @@
 import { program } from 'commander';
 import { defaultSettings } from '../settings';
-import { TestStatus, runTests } from '../test';
+import { TestStatus, runTests } from '../testing';
 import { resolve } from 'path';
 import pc from 'picocolors';
 
