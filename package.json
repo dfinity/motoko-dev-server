@@ -6,7 +6,10 @@
     "license": "Apache-2.0",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
-    "bin": "bin/mo-dev.js",
+    "bin": {
+        "mo-dev": "bin/mo-dev.js",
+        "mo-test": "bin/mo-test.js"
+    },
     "scripts": {
         "start": "ts-node src/commands/mo-dev",
         "mo-test": "ts-node src/commands/mo-test",
