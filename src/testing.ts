@@ -78,56 +78,57 @@ async function runTest(
         );
     }
 
-    if (mode === 'interpreter') {
-        const interpretResult = await execa(
-            join(dfxCache, 'moc'),
-            [
-                '-r',
-                path,
-                ...(dfxSources?.split(' ') || []), // TODO: account for spaces in file names
-            ],
-            { cwd: directory },
-        );
-
-        return {
-            test,
-            status: interpretResult.failed ? 'failed' : 'passed',
-            stdout: interpretResult.stdout,
-            stderr: interpretResult.stderr,
-        };
-    } else if (mode === 'wasi') {
-        const wasmPath = path.replace(/\.[a-z]$/i, '.wasm');
-        try {
-            const compileResult = await execa(
+    try {
+        if (mode === 'interpreter') {
+            const interpretResult = await execa(
                 join(dfxCache, 'moc'),
-                ['--wasi-system-api', path],
+                [
+                    '-r',
+                    path,
+                    ...(dfxSources?.split(' ') || []), // TODO: account for spaces in file names
+                ],
                 { cwd: directory },
             );
-            if (compileResult.failed) {
-                return {
-                    test,
-                    status: 'errored',
-                    stdout: compileResult.stdout,
-                    stderr: compileResult.stderr,
-                };
-            }
-            const wasmtimeResult = await execa('wasmtime', [path], {
-                cwd: directory,
-            });
 
             return {
                 test,
-                status: wasmtimeResult.failed ? 'failed' : 'passed',
-                stdout: wasmtimeResult.stdout,
-                stderr: wasmtimeResult.stderr,
+                status: interpretResult.failed ? 'failed' : 'passed',
+                stdout: interpretResult.stdout,
+                stderr: interpretResult.stderr,
             };
-        } finally {
-            if ((await stat(wasmPath)).isFile()) {
-                await unlink(wasmPath);
+        } else if (mode === 'wasi') {
+            const wasmPath = path.replace(/\.[a-z]$/i, '.wasm');
+            try {
+                const compileResult = await execa(
+                    join(dfxCache, 'moc'),
+                    ['--wasi-system-api', path],
+                    { cwd: directory },
+                );
+                const wasmtimeResult = await execa('wasmtime', [path], {
+                    cwd: directory,
+                });
+
+                return {
+                    test,
+                    status: wasmtimeResult.failed ? 'failed' : 'passed',
+                    stdout: wasmtimeResult.stdout,
+                    stderr: wasmtimeResult.stderr,
+                };
+            } finally {
+                if ((await stat(wasmPath)).isFile()) {
+                    await unlink(wasmPath);
+                }
             }
+        } else {
+            throw new Error(`Invalid test mode: '${mode}'`);
         }
-    } else {
-        throw new Error(`Invalid test mode: '${mode}'`);
+    } catch (err) {
+        return {
+            test,
+            status: 'errored',
+            stdout: err.stdout,
+            stderr: err.stderr || String(err.stack || err),
+        };
     }
 }
 
