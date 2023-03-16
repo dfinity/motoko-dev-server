@@ -88,4 +88,7 @@ const settings: Settings = {
     hotReload: !!hotReload || defaultSettings.hotReload,
 };
 
-devServer(settings).catch((err) => console.error(err.stack || err));
+devServer(settings).catch((err) => {
+    console.error(err.stack || err);
+    process.exit(1);
+});

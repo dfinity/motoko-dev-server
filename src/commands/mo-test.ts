@@ -44,9 +44,12 @@ const settings = {
 };
 
 runTests(settings)
-.then((runs) => {
-    if (!runs.length) {
+    .then((runs) => {
+        if (!runs.length) {
+            process.exit(1);
+        }
+    })
+    .catch((err) => {
+        console.error(err.stack || err);
         process.exit(1);
-    }
-})
-.catch((err) => console.error(err.stack || err));
+    });
