@@ -2,7 +2,7 @@
     "name": "mo-dev",
     "version": "0.5.1",
     "description": "A live reload development server for Motoko smart contracts.",
-    "author": "Ryan Vandersmith (https://github.com/rvanasa)",
+    "author": "DFINITY Foundation (https://dfinity.org)",
     "license": "Apache-2.0",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
