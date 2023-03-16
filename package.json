@@ -19,7 +19,7 @@
         "prepare": "husky install && cd wasm && cargo update",
         "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
         "precommit": "lint-staged",
-        "prepublishOnly": "run-s test build"
+        "prepublishOnly": "run-s build test"
     },
     "dependencies": {
         "@dfinity/candid": "0.15.4",
