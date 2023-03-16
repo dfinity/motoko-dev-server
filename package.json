@@ -1,8 +1,8 @@
 {
     "name": "mo-dev",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "A live reload development server for Motoko smart contracts.",
-    "author": "Ryan Vandersmith (https://github.com/rvanasa)",
+    "author": "DFINITY Foundation (https://dfinity.org)",
     "license": "Apache-2.0",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -19,7 +19,7 @@
         "prepare": "husky install && cd wasm && cargo update",
         "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
         "precommit": "lint-staged",
-        "prepublishOnly": "run-s test build"
+        "prepublishOnly": "run-s build test"
     },
     "dependencies": {
         "@dfinity/candid": "0.15.4",
