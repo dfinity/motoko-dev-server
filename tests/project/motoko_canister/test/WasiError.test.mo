@@ -1,0 +1,3 @@
+// @testmode wasi
+
+ExpectedError

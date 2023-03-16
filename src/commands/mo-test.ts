@@ -1,0 +1,52 @@
+import { program } from 'commander';
+import { resolve } from 'path';
+import { defaultSettings } from '../settings';
+import { TestMode, asTestMode, runTests } from '../testing';
+
+let verbosity = defaultSettings.verbosity;
+const increaseVerbosity = () => verbosity++;
+
+const testModes: TestMode[] = [];
+const addTestMode = (mode: string) => testModes.push(asTestMode(mode));
+
+const examples: [string, string][] = [['-C', 'test/']];
+
+const { cwd, version } = program
+    .name('mo-test')
+    .description(
+        `Examples:\n${examples
+            .map(
+                ([usage, description]) =>
+                    `  $ mo-test ${usage}  # ${description}`,
+            )
+            .join('\n')}`,
+    )
+    .option('-V, --version', `show installed version`)
+    .option('-C, --cwd <cwd>', 'directory containing a `dfx.json` file')
+    .option(
+        '--testmode <mode>',
+        `default test mode (interpreter, wasi)`,
+        addTestMode,
+    )
+    .option('-v, --verbose', `show more details in console`, increaseVerbosity)
+    .parse()
+    .opts();
+
+if (version) {
+    console.log('mo-test', require('../../package.json').version);
+    process.exit(0);
+}
+
+const settings = {
+    directory: resolve(cwd || defaultSettings.directory),
+    testModes: testModes.length ? testModes : defaultSettings.testModes,
+    verbosity,
+};
+
+runTests(settings)
+.then((runs) => {
+    if (!runs.length) {
+        process.exit(1);
+    }
+})
+.catch((err) => console.error(err.stack || err));

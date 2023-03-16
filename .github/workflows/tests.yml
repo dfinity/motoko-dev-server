@@ -11,7 +11,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -26,7 +25,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: cd .. && git clone https://github.com/dfinity/motoko.rs
+    - run: git clone https://github.com/dfinity/motoko.rs ../motoko.rs --depth 1
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test

@@ -3,7 +3,7 @@ import createApp from './app';
 import { Settings } from './settings';
 import pc from 'picocolors';
 
-export function serve(settings: Settings) {
+export async function serve(settings: Settings) {
     if (settings.verbosity >= 1 && settings.delay) {
         console.log(pc.gray('Adding artificial delay'));
     }
