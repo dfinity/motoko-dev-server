@@ -56,11 +56,21 @@ export async function runTests(
         console.log(pc.magenta(dfxSources));
     }
 
-    console.log(
-        `Running ${paths.length} unit test${
-            paths.length === 1 ? '' : 's'
-        } ${pc.dim(`(${testFilePattern})`)}`,
-    );
+    if (settings.verbosity >= 0) {
+        console.log(
+            `Running ${paths.length} unit test${
+                paths.length === 1 ? '' : 's'
+            } ${pc.dim(`(${testFilePattern})`)}`,
+        );
+    }
+
+    const defaultStatusEmoji = '❓';
+    const statusEmojis: Record<TestStatus, string> = {
+        passed: '✅',
+        failed: '❌',
+        skipped: '⏩',
+        errored: '❗',
+    };
 
     const runs: TestRun[] = [];
     for (const path of paths) {
@@ -71,6 +81,34 @@ export async function runTests(
         runs.push(run);
         if (callback) {
             await callback(run);
+        }
+        if (settings.verbosity >= 0) {
+            const important =
+                run.status === 'errored' || run.status === 'failed';
+            if (important) {
+                if (run.stdout?.trim()) {
+                    console.error(run.stdout);
+                }
+                if (run.stderr?.trim()) {
+                    console.error(pc.red(run.stderr));
+                }
+            }
+            const showTestMode =
+                settings.testModes.length > 1 ||
+                !settings.testModes.includes(run.mode);
+            const decorateExtension = '.test.mo';
+            const decoratedPath = run.test.path.endsWith(decorateExtension)
+                ? `${run.test.path.slice(0, -decorateExtension.length)}`
+                : run.test.path;
+            console.log(
+                pc.white(
+                    `${
+                        statusEmojis[run.status] ?? defaultStatusEmoji
+                    } ${relative(settings.directory, decoratedPath)}${
+                        showTestMode ? pc.dim(` (${run.mode})`) : ''
+                    }`,
+                ),
+            );
         }
     }
     return runs;

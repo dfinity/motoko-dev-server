@@ -1,8 +1,7 @@
 import { program } from 'commander';
+import { resolve } from 'path';
 import { defaultSettings } from '../settings';
-import { TestStatus, runTests, TestMode, asTestMode } from '../testing';
-import { resolve, relative } from 'path';
-import pc from 'picocolors';
+import { TestMode, asTestMode, runTests } from '../testing';
 
 let verbosity = defaultSettings.verbosity;
 const increaseVerbosity = () => verbosity++;
@@ -38,48 +37,16 @@ if (version) {
     process.exit(0);
 }
 
-const defaultStatusEmoji = '❓';
-const statusEmojis: Record<TestStatus, string> = {
-    passed: '✅',
-    failed: '❌',
-    skipped: '⏩',
-    errored: '❗',
-};
-
 const settings = {
     directory: resolve(cwd || defaultSettings.directory),
     testModes: testModes.length ? testModes : defaultSettings.testModes,
     verbosity,
 };
 
-runTests(settings, async (run) => {
-    const important = run.status === 'errored' || run.status === 'failed';
-    if (important) {
-        if (run.stdout?.trim()) {
-            console.error(run.stdout);
-        }
-        if (run.stderr?.trim()) {
-            console.error(pc.red(run.stderr));
-        }
+runTests(settings)
+.then((runs) => {
+    if (!runs.length) {
+        process.exit(1);
     }
-    const showTestMode =
-        settings.testModes.length > 1 || !settings.testModes.includes(run.mode);
-    const decorateExtension = '.test.mo';
-    const decoratedPath = run.test.path.endsWith(decorateExtension)
-        ? `${run.test.path.slice(0, -decorateExtension.length)}`
-        : run.test.path;
-    console.log(
-        pc.white(
-            `${statusEmojis[run.status] ?? defaultStatusEmoji} ${relative(
-                settings.directory,
-                decoratedPath,
-            )}${showTestMode ? pc.dim(` (${run.mode})`) : ''}`,
-        ),
-    );
 })
-    .then((runs) => {
-        if (!runs.length) {
-            process.exit(1);
-        }
-    })
-    .catch((err) => console.error(err.stack || err));
+.catch((err) => console.error(err.stack || err));
