@@ -58,7 +58,7 @@ export async function runTests(
 
     if (settings.verbosity >= 0) {
         console.log(
-            `Running ${paths.length} unit test${
+            `Running ${paths.length} unit test file${
                 paths.length === 1 ? '' : 's'
             } ${pc.dim(`(${testFilePattern})`)}`,
         );
@@ -78,38 +78,43 @@ export async function runTests(
         const test = {
             path: join(directory, path),
         };
-        const run = await runTest(test, settings, { dfxCache, dfxSources });
-        runs.push(run);
-        if (callback) {
-            await callback(run);
-        }
-        if (settings.verbosity >= 0) {
-            const important =
-                run.status === 'errored' || run.status === 'failed';
-            if (important) {
-                if (run.stdout?.trim()) {
-                    console.error(run.stdout);
-                }
-                if (run.stderr?.trim()) {
-                    console.error(pc.red(run.stderr));
-                }
+        const fileRuns = await runTestFile(test, settings, {
+            dfxCache,
+            dfxSources,
+        });
+        for (const run of fileRuns) {
+            runs.push(run);
+            if (callback) {
+                await callback(run);
             }
-            const showTestMode =
-                settings.testModes.length > 1 ||
-                !settings.testModes.includes(run.mode);
-            const decorateExtension = '.test.mo';
-            const decoratedPath = run.test.path.endsWith(decorateExtension)
-                ? `${run.test.path.slice(0, -decorateExtension.length)}`
-                : run.test.path;
-            console.log(
-                pc.white(
-                    `${
-                        statusEmojis[run.status] ?? defaultStatusEmoji
-                    } ${relative(settings.directory, decoratedPath)}${
-                        showTestMode ? pc.dim(` (${run.mode})`) : ''
-                    }`,
-                ),
-            );
+            if (settings.verbosity >= 0) {
+                const important =
+                    run.status === 'errored' || run.status === 'failed';
+                if (important) {
+                    if (run.stdout?.trim()) {
+                        console.error(run.stdout);
+                    }
+                    if (run.stderr?.trim()) {
+                        console.error(pc.red(run.stderr));
+                    }
+                }
+                const showTestMode =
+                    settings.testModes.length > 1 ||
+                    !settings.testModes.includes(run.mode);
+                const decorateExtension = '.test.mo';
+                const decoratedPath = run.test.path.endsWith(decorateExtension)
+                    ? `${run.test.path.slice(0, -decorateExtension.length)}`
+                    : run.test.path;
+                console.log(
+                    pc.white(
+                        `${
+                            statusEmojis[run.status] ?? defaultStatusEmoji
+                        } ${relative(settings.directory, decoratedPath)}${
+                            showTestMode ? pc.dim(` (${run.mode})`) : ''
+                        }`,
+                    ),
+                );
+            }
         }
     }
 
@@ -131,14 +136,12 @@ export async function runTests(
     return runs;
 }
 
-async function runTest(
+async function runTestFile(
     test: Test,
-    { directory, verbosity, testModes }: TestSettings,
-    { dfxCache, dfxSources }: { dfxCache: string; dfxSources: string },
-): Promise<TestRun> {
-    const { path } = test;
-
-    const source = await readFile(path, 'utf8');
+    settings: TestSettings,
+    shared: { dfxCache: string; dfxSources: string },
+): Promise<TestRun[]> {
+    const source = await readFile(test.path, 'utf8');
     const modes: TestMode[] = [];
     const modeRegex = /\/\/[^\S\n]*@testmode[^\S\n]*([a-zA-Z]+)/g;
     let nextMode: string;
@@ -146,83 +149,97 @@ async function runTest(
         modes.push(asTestMode(nextMode));
     }
     if (!modes.length) {
-        modes.push(...testModes);
+        modes.push(...settings.testModes);
     }
 
-    if (verbosity >= 1) {
+    const runs: TestRun[] = [];
+    for (const mode of modes) {
+        runs.push(await runTest(test, mode, settings, shared));
+    }
+    return runs;
+}
+
+async function runTest(
+    test: Test,
+    mode: TestMode,
+    settings: TestSettings,
+    { dfxCache, dfxSources }: { dfxCache: string; dfxSources: string },
+): Promise<TestRun> {
+    const { path } = test;
+
+    if (settings.verbosity >= 1) {
         console.log(
             pc.blue(
-                `Running test: ${relative(directory, path)} (${modes.join(
-                    ', ',
-                )})`,
+                `Running test: ${relative(
+                    settings.directory,
+                    test.path,
+                )} (${mode})`,
             ),
         );
     }
 
-    for (const mode of modes) {
-        try {
-            if (mode === 'interpreter') {
-                const interpretResult = await execa(
+    try {
+        if (mode === 'interpreter') {
+            const interpretResult = await execa(
+                `${shellEscape([
+                    join(dfxCache, 'moc'),
+                    '-r',
+                    path,
+                ])} ${dfxSources}`,
+                { shell: true, cwd: settings.directory, reject: false },
+            );
+            return {
+                test,
+                mode,
+                status: interpretResult.failed ? 'failed' : 'passed',
+                stdout: interpretResult.stdout,
+                stderr: interpretResult.stderr,
+            };
+        } else if (mode === 'wasi') {
+            const wasmPath = `${path.replace(/\.mo$/i, '')}.wasm`;
+
+            try {
+                await execa(
                     `${shellEscape([
                         join(dfxCache, 'moc'),
-                        '-r',
+                        '-wasi-system-api',
+                        '-o',
+                        wasmPath,
                         path,
                     ])} ${dfxSources}`,
-                    { shell: true, cwd: directory, reject: false },
+                    { shell: true, cwd: settings.directory },
+                );
+                const wasmtimeResult = await execa(
+                    'wasmtime',
+                    [basename(wasmPath)],
+                    {
+                        cwd: dirname(path),
+                        reject: false,
+                    },
                 );
                 return {
                     test,
                     mode,
-                    status: interpretResult.failed ? 'failed' : 'passed',
-                    stdout: interpretResult.stdout,
-                    stderr: interpretResult.stderr,
+                    status: wasmtimeResult.failed ? 'failed' : 'passed',
+                    stdout: wasmtimeResult.stdout,
+                    stderr: wasmtimeResult.stderr,
                 };
-            } else if (mode === 'wasi') {
-                const wasmPath = `${path.replace(/\.mo$/i, '')}.wasm`;
-
-                try {
-                    await execa(
-                        `${shellEscape([
-                            join(dfxCache, 'moc'),
-                            '-wasi-system-api',
-                            '-o',
-                            wasmPath,
-                            path,
-                        ])} ${dfxSources}`,
-                        { shell: true, cwd: directory },
-                    );
-                    const wasmtimeResult = await execa(
-                        'wasmtime',
-                        [basename(wasmPath)],
-                        {
-                            cwd: dirname(path),
-                            reject: false,
-                        },
-                    );
-                    return {
-                        test,
-                        mode,
-                        status: wasmtimeResult.failed ? 'failed' : 'passed',
-                        stdout: wasmtimeResult.stdout,
-                        stderr: wasmtimeResult.stderr,
-                    };
-                } finally {
-                    if ((await stat(wasmPath)).isFile()) {
-                        await unlink(wasmPath);
-                    }
+            } finally {
+                if ((await stat(wasmPath)).isFile()) {
+                    await unlink(wasmPath);
                 }
-            } else {
-                throw new Error(`Invalid test mode: '${mode}'`);
             }
-        } catch (err) {
-            return {
-                test,
-                mode,
-                status: 'errored',
-                stdout: err.stdout,
-                stderr: err.stderr || String(err.stack || err),
-            };
+        } else {
+            throw new Error(`Invalid test mode: '${mode}'`);
         }
+    } catch (err) {
+        return {
+            test,
+            mode,
+            status: 'errored',
+            stdout: err.stdout,
+            stderr: err.stderr || String(err.stack || err),
+        };
     }
 }
 
