@@ -33,7 +33,7 @@ export interface TestRun {
 }
 
 export function asTestMode(mode: string): TestMode {
-    // TODO: possibly validate
+    // TODO: possibly validate here
     return mode as TestMode;
 }
 
