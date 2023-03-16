@@ -1,11 +1,13 @@
 import execa from 'execa';
 import glob from 'fast-glob';
-import { readFile, stat, unlink } from 'fs/promises';
-import { join, relative, basename, dirname } from 'path';
+import { existsSync } from 'fs';
+import { readFile, unlink } from 'fs/promises';
+import { basename, dirname, join, relative } from 'path';
 import pc from 'picocolors';
+import shellEscape from 'shell-escape';
+import which from 'which';
 import { loadDfxSources } from './dfx';
 import { validateSettings } from './settings';
-import shellEscape from 'shell-escape';
 
 const testFilePattern = '*.test.mo';
 
@@ -49,7 +51,7 @@ export async function runTests(
         ignore: ['**/node_modules/**'],
     });
 
-    const dfxCache = await findDfxCacheLocation(directory);
+    const mocPath = await findMocPath(settings);
     const dfxSources = await loadDfxSources(directory);
 
     if (settings.verbosity >= 1) {
@@ -79,7 +81,7 @@ export async function runTests(
             path: join(directory, path),
         };
         const fileRuns = await runTestFile(test, settings, {
-            dfxCache,
+            mocPath,
             dfxSources,
         });
         for (const run of fileRuns) {
@@ -139,7 +141,7 @@ export async function runTests(
 async function runTestFile(
     test: Test,
     settings: TestSettings,
-    shared: { dfxCache: string; dfxSources: string },
+    shared: { mocPath: string; dfxSources: string },
 ): Promise<TestRun[]> {
     const source = await readFile(test.path, 'utf8');
     const modes: TestMode[] = [];
@@ -163,7 +165,7 @@ async function runTest(
     test: Test,
     mode: TestMode,
     settings: TestSettings,
-    { dfxCache, dfxSources }: { dfxCache: string; dfxSources: string },
+    { mocPath, dfxSources }: { mocPath: string; dfxSources: string },
 ): Promise<TestRun> {
     const { path } = test;
 
@@ -181,11 +183,7 @@ async function runTest(
     try {
         if (mode === 'interpreter') {
             const interpretResult = await execa(
-                `${shellEscape([
-                    join(dfxCache, 'moc'),
-                    '-r',
-                    path,
-                ])} ${dfxSources}`,
+                `${shellEscape([mocPath, '-r', path])} ${dfxSources}`,
                 { shell: true, cwd: settings.directory, reject: false },
             );
             return {
@@ -197,11 +195,10 @@ async function runTest(
             };
         } else if (mode === 'wasi') {
             const wasmPath = `${path.replace(/\.mo$/i, '')}.wasm`;
-
             try {
                 await execa(
                     `${shellEscape([
-                        join(dfxCache, 'moc'),
+                        mocPath,
                         '-wasi-system-api',
                         '-o',
                         wasmPath,
@@ -225,7 +222,7 @@ async function runTest(
                     stderr: wasmtimeResult.stderr,
                 };
             } finally {
-                if ((await stat(wasmPath)).isFile()) {
+                if (existsSync(wasmPath)) {
                     await unlink(wasmPath);
                 }
             }
@@ -247,11 +244,20 @@ const dfxCacheLocationMap = new Map<string, string>();
 async function findDfxCacheLocation(directory: string): Promise<string> {
     let cacheLocation = dfxCacheLocationMap.get(directory);
     if (!cacheLocation) {
-        const result = await execa('dfx', ['cache', 'show'], {
-            cwd: directory,
-        });
-        cacheLocation = result.stdout;
+        cacheLocation = (
+            await execa('dfx', ['cache', 'show'], {
+                cwd: directory,
+            })
+        ).stdout;
         dfxCacheLocationMap.set(directory, cacheLocation);
     }
     return cacheLocation;
+}
+
+async function findMocPath(settings: TestSettings): Promise<string> {
+    const mocCommand = 'moc';
+    return (
+        (await which(mocCommand, { nothrow: true })) ||
+        join(await findDfxCacheLocation(settings.directory), mocCommand)
+    );
 }
