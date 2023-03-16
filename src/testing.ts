@@ -9,8 +9,6 @@ import which from 'which';
 import { loadDfxSources } from './dfx';
 import { validateSettings } from './settings';
 
-const testFilePattern = '*.test.mo';
-
 export interface TestSettings {
     directory: string;
     verbosity: number;
@@ -45,6 +43,7 @@ export async function runTests(
     const settings = (await validateSettings(options)) as TestSettings;
     const { directory } = settings;
 
+    const testFilePattern = '*.test.mo';
     const paths = await glob(`**/${testFilePattern}`, {
         cwd: directory,
         dot: false,
