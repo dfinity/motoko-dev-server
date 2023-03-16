@@ -62,6 +62,7 @@ export async function runTests(
                 paths.length === 1 ? '' : 's'
             } ${pc.dim(`(${testFilePattern})`)}`,
         );
+        console.log();
     }
 
     const defaultStatusEmoji = '❓';
@@ -110,6 +111,22 @@ export async function runTests(
                 ),
             );
         }
+    }
+
+    if (runs.length && settings.verbosity >= 0) {
+        const counts = {} as Record<TestStatus, number>;
+        runs.forEach(
+            (run) => (counts[run.status] = (counts[run.status] || 0) + 1),
+        );
+        console.log();
+        console.log(
+            (<TestStatus[]>['passed', 'failed', 'errored', 'skipped'])
+                .filter((s) => s in counts)
+                .map((s) => `${counts[s]} ${s}`)
+                .concat([`${runs.length} total`])
+                .join(', '),
+        );
+        console.log();
     }
     return runs;
 }
