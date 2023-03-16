@@ -1,6 +1,6 @@
 {
     "name": "mo-dev",
-    "version": "0.5.3",
+    "version": "0.5.4",
     "description": "A live reload development server for Motoko smart contracts.",
     "author": "DFINITY Foundation (https://dfinity.org)",
     "license": "Apache-2.0",
@@ -38,6 +38,7 @@
         "http-proxy-middleware": "2.0.6",
         "morgan": "1.10.0",
         "motoko": "3.5.4",
+        "node-cleanup": "^2.1.2",
         "picocolors": "1.0.0",
         "shell-escape": "^0.2.0",
         "swagger-jsdoc": "6.2.8",
@@ -54,6 +55,7 @@
         "@types/express": "^4.17.17",
         "@types/jest": "^29.4.4",
         "@types/morgan": "^1.9.4",
+        "@types/node-cleanup": "^2.1.2",
         "@types/shell-escape": "^0.2.1",
         "@types/swagger-jsdoc": "^6.0.1",
         "@types/swagger-ui-express": "^4.1.3",

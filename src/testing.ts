@@ -1,15 +1,14 @@
 import execa from 'execa';
 import glob from 'fast-glob';
-import { existsSync } from 'fs';
-import { readFile, unlink } from 'fs/promises';
+import { existsSync, unlinkSync } from 'fs';
+import { readFile } from 'fs/promises';
+import onCleanup from 'node-cleanup';
 import { basename, dirname, join, relative } from 'path';
 import pc from 'picocolors';
 import shellEscape from 'shell-escape';
 import which from 'which';
 import { loadDfxSources } from './dfx';
 import { validateSettings } from './settings';
-
-const testFilePattern = '*.test.mo';
 
 export interface TestSettings {
     directory: string;
@@ -34,7 +33,7 @@ export interface TestRun {
 }
 
 export function asTestMode(mode: string): TestMode {
-    // TODO: possibly validate
+    // TODO: possibly validate here
     return mode as TestMode;
 }
 
@@ -45,6 +44,7 @@ export async function runTests(
     const settings = (await validateSettings(options)) as TestSettings;
     const { directory } = settings;
 
+    const testFilePattern = '*.test.mo';
     const paths = await glob(`**/${testFilePattern}`, {
         cwd: directory,
         dot: false,
@@ -195,6 +195,12 @@ async function runTest(
             };
         } else if (mode === 'wasi') {
             const wasmPath = `${path.replace(/\.mo$/i, '')}.wasm`;
+            const cleanup = () => {
+                if (existsSync(wasmPath)) {
+                    unlinkSync(wasmPath);
+                }
+            };
+            cleanupHandlers.add(cleanup);
             try {
                 await execa(
                     `${shellEscape([
@@ -222,9 +228,8 @@ async function runTest(
                     stderr: wasmtimeResult.stderr,
                 };
             } finally {
-                if (existsSync(wasmPath)) {
-                    await unlink(wasmPath);
-                }
+                cleanup();
+                cleanupHandlers.delete(cleanup);
             }
         } else {
             throw new Error(`Invalid test mode: '${mode}'`);
@@ -261,3 +266,15 @@ async function findMocPath(settings: TestSettings): Promise<string> {
         join(await findDfxCacheLocation(settings.directory), mocCommand)
     );
 }
+
+type CleanupHandler = (
+    exitCode: number | null,
+    signal: string | null,
+) => boolean | undefined | void;
+
+const cleanupHandlers = new Set<CleanupHandler>();
+onCleanup((...args) => {
+    for (const handler of cleanupHandlers) {
+        handler(...args);
+    }
+});
