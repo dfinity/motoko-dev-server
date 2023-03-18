@@ -49,6 +49,12 @@ Automatically respond "yes" to reinstall prompts (`--yes` or `-y`; may clear can
 mo-dev --deploy -y
 ```
 
+Run unit tests (`*.test.mo`) on Motoko file change (`--test` or `-t`):
+
+```sh
+mo-dev --test
+```
+
 Run an arbitrary command on Motoko file change (`--exec` or `-x`):
 
 ```sh
