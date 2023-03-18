@@ -115,7 +115,7 @@ Run all Motoko unit tests using a WASI runtime by default (faster but requires i
 mo-test --testmode wasi
 ```
 
-Configure the runtime of an individual unit test by including the following comment in your `*.test.mo` file:
+Configure the runtime of an individual unit test by including the following comment in a `*.test.mo` file:
 
 ```motoko
 // @testmode wasi
