@@ -49,6 +49,12 @@ Automatically respond "yes" to reinstall prompts (`--yes` or `-y`; may clear can
 mo-dev --deploy -y
 ```
 
+Run unit tests (`*.test.mo`) on Motoko file change (`--test` or `-t`):
+
+```sh
+mo-dev --test
+```
+
 Run an arbitrary command on Motoko file change (`--exec` or `-x`):
 
 ```sh
@@ -85,6 +91,34 @@ devServer({
     verbosity: 0,
     // ...
 });
+```
+
+## `mo-test`
+
+The `mo-dev` npm package includes a `mo-test` command which can be used to run unit tests in CI workflows. 
+
+View all available options:
+
+```sh
+mo-test --help
+```
+
+Run all Motoko unit tests (`*.test.mo`):
+
+```sh
+mo-test
+```
+
+Run all Motoko unit tests using a WASI runtime by default (faster but requires installing [Wasmtime](https://wasmtime.dev/) on your system):
+
+```sh
+mo-test --testmode wasi
+```
+
+Configure the runtime of an individual unit test by including the following comment in a `*.test.mo` file:
+
+```motoko
+// @testmode wasi
 ```
 
 ---
