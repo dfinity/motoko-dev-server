@@ -93,6 +93,34 @@ devServer({
 });
 ```
 
+## `mo-test`
+
+The `mo-dev` npm package includes a `mo-test` command which can be used to run unit tests in CI workflows. 
+
+View all available options:
+
+```sh
+mo-test --help
+```
+
+Run all Motoko unit tests (`*.test.mo`):
+
+```sh
+mo-test
+```
+
+Run all Motoko unit tests using a WASI runtime by default (faster but requires installing [Wasmtime](https://wasmtime.dev/) on your system):
+
+```sh
+mo-test --testmode wasi
+```
+
+Configure the runtime of an individual unit test by including the following comment in your `*.test.mo` file:
+
+```motoko
+// @testmode wasi
+```
+
 ---
 
 `mo-dev` is early in development. Please feel free to report a bug, ask a question, or request a feature on the project's [GitHub issues](https://github.com/dfinity/motoko-dev-server/issues) page. 

@@ -9,7 +9,10 @@ const increaseVerbosity = () => verbosity++;
 const testModes: TestMode[] = [];
 const addTestMode = (mode: string) => testModes.push(asTestMode(mode));
 
-const examples: [string, string][] = [['-C', 'test/']];
+const examples: [string, string][] = [
+    ['--testmode wasi', 'Use the WASI runtime by default (faster but requires `wasmtime` on your system path)'],
+    ['--testmode wasi --testmode interpreter', 'Use both the interpreter and WASI runtimes by default'],
+];
 
 const { cwd, version } = program
     .name('mo-test')
