@@ -85,7 +85,7 @@ describe('mo-dev', () => {
         }
     });
 
-    test.skip('starts the VM server on a custom port', async () => {
+    test('starts the VM server on a custom port', async () => {
         const port = 56789;
         const { close } = await devServer({
             directory: join(projectPath, 'vm'),
