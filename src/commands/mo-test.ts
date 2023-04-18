@@ -10,8 +10,14 @@ const testModes: TestMode[] = [];
 const addTestMode = (mode: string) => testModes.push(asTestMode(mode));
 
 const examples: [string, string][] = [
-    ['--testmode wasi', 'Use the WASI runtime by default (faster but requires `wasmtime` on your system path)'],
-    ['--testmode wasi --testmode interpreter', 'Use both the interpreter and WASI runtimes by default'],
+    [
+        '--testmode wasi',
+        'Use the WASI runtime by default (faster but requires `wasmtime` on your system path)',
+    ],
+    [
+        '--testmode wasi --testmode interpreter',
+        'Use both the interpreter and WASI runtimes by default',
+    ],
 ];
 
 const { cwd, version } = program
@@ -48,7 +54,12 @@ const settings = {
 
 runTests(settings)
     .then((runs) => {
-        if (!runs.length) {
+        if (
+            runs.length === 0 ||
+            runs.some(
+                (run) => run.status !== 'passed' && run.status !== 'skipped',
+            )
+        ) {
             process.exit(1);
         }
     })
