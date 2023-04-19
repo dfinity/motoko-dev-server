@@ -62,9 +62,8 @@ export async function runTests(
         console.log(
             `Running ${paths.length} unit test file${
                 paths.length === 1 ? '' : 's'
-            } ${pc.dim(`(${testFilePattern})`)}`,
+            } ${pc.dim(`(${testFilePattern})`)}\n`,
         );
-        console.log();
     }
 
     const defaultStatusEmoji = '❓';
