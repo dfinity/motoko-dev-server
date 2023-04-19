@@ -129,29 +129,60 @@ export async function watch(settings: Settings) {
             );
         }
 
+        const runDfx = (parts: string[], verbosity: number) => {
+            spawnSync('dfx', parts, {
+                cwd: directory,
+                stdio: verbosity >= 1 ? 'inherit' : 'ignore',
+                encoding: 'utf-8',
+            });
+        };
+
+        if (generate) {
+            runDfx(['canister', 'create', '--all'], 1);
+        }
         if (deploy || reinstall) {
             let canisterIds = loadCanisterIds();
 
             const uiAlias = '__Candid_UI';
             const uiAddress = canisterIds?.[uiAlias];
             if (!uiAddress) {
-                // Deploy initial canisters
-                canisters.forEach((canister) => {
-                    log(0, pc.green('prepare'), pc.gray(canister.alias));
-                    spawnSync(
-                        'dfx',
-                        [
-                            'deploy',
-                            canister.alias,
-                            ...(reinstall ? ['-y'] : []),
-                        ],
-                        {
-                            cwd: directory,
-                            stdio: 'inherit',
-                            encoding: 'utf-8',
-                        },
-                    );
-                });
+                if (generate) {
+                    // Find asset canister dependencies
+                    const dfxConfig = await loadDfxConfig(directory);
+                    const dependencies: string[] = [];
+                    Object.values(dfxConfig.canisters)?.forEach((config) => {
+                        if (config.type === 'assets') {
+                            config.dependencies?.forEach((dependency) => {
+                                if (
+                                    !dependencies.includes(dependency) &&
+                                    dfxConfig.canisters[dependency]?.type !==
+                                        'assets'
+                                ) {
+                                    dependencies.push(dependency);
+                                }
+                            });
+                        }
+                    });
+                    dependencies.forEach((alias) => {
+                        log(0, pc.green('prepare'), pc.gray(alias));
+                        runDfx(['deploy', alias], 1);
+                    });
+                    log(0, pc.green('deploy'), pc.gray('*'));
+                    runDfx(['deploy'], 1);
+                } else {
+                    // Deploy initial canisters
+                    canisters.forEach((canister) => {
+                        log(0, pc.green('prepare'), pc.gray(canister.alias));
+                        runDfx(
+                            [
+                                'deploy',
+                                canister.alias,
+                                ...(reinstall ? ['-y'] : []),
+                            ],
+                            1,
+                        );
+                    });
+                }
             } else if (canisters.length) {
                 // Skip for environments where Candid UI is not available
                 if (!process.env.MO_DEV_HIDE_URLS) {
@@ -173,37 +204,6 @@ export async function watch(settings: Settings) {
                     });
                 }
             }
-        } else if (generate) {
-            const runDfx = (parts: string[]) => {
-                spawnSync('dfx', parts, {
-                    cwd: directory,
-                    stdio: verbosity >= 1 ? 'inherit' : 'ignore',
-                    encoding: 'utf-8',
-                });
-            };
-
-            // Find asset canister dependencies
-            const dfxConfig = await loadDfxConfig(directory);
-            const assets: string[] = [];
-            const dependencies: string[] = [];
-            Object.entries(dfxConfig.canisters)?.forEach(([alias, config]) => {
-                if (config.type === 'assets') {
-                    assets.push(alias);
-                    config.dependencies?.forEach((dependency) => {
-                        if (
-                            !dependencies.includes(dependency) &&
-                            dfxConfig.canisters[dependency]?.type !== 'assets'
-                        ) {
-                            dependencies.push(dependency);
-                        }
-                    });
-                }
-            });
-
-            log(0, pc.green('setup'));
-            runDfx(['canister', 'create', '--all']); // Create all canisters
-            dependencies.forEach((alias) => runDfx(['deploy', alias])); // Deploy asset canister dependencies
-            assets.forEach((alias) => runDfx(['deploy', alias])); // Deploy asset canisters
         }
     };
     await updateDfxConfig();
