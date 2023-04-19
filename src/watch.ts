@@ -138,7 +138,7 @@ export async function watch(settings: Settings) {
         };
 
         if (generate) {
-            runDfx(['canister', 'create', '--all'], 1);
+            runDfx(['canister', 'create', '--all'], verbosity);
         }
         if (deploy || reinstall) {
             let canisterIds = loadCanisterIds();
@@ -153,11 +153,7 @@ export async function watch(settings: Settings) {
                     Object.values(dfxConfig.canisters)?.forEach((config) => {
                         if (config.type === 'assets') {
                             config.dependencies?.forEach((dependency) => {
-                                if (
-                                    !dependencies.includes(dependency) &&
-                                    dfxConfig.canisters[dependency]?.type !==
-                                        'assets'
-                                ) {
+                                if (!dependencies.includes(dependency)) {
                                     dependencies.push(dependency);
                                 }
                             });
@@ -167,7 +163,7 @@ export async function watch(settings: Settings) {
                         log(0, pc.green('prepare'), pc.gray(alias));
                         runDfx(['deploy', alias], 1);
                     });
-                    log(0, pc.green('deploy'), pc.gray('*'));
+                    runDfx(['generate'], 1);
                     runDfx(['deploy'], 1);
                 } else {
                     // Deploy initial canisters
