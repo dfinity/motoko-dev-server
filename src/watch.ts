@@ -4,12 +4,13 @@ import glob from 'fast-glob';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import pc from 'picocolors';
+import { FileCache } from './cache';
 import { Canister, getDfxCanisters } from './canister';
 import { loadDfxConfig } from './dfx';
 import { Settings } from './settings';
+import { runTests } from './testing';
 import { getVirtualFile } from './utils/motoko';
 import wasm from './wasm';
-import { FileCache } from './cache';
 
 // Pattern to watch for file changes
 const watchGlob = '**/*.mo';
@@ -60,15 +61,18 @@ export function findCanister(alias: string): Canister | undefined {
     return canisters.find((c) => c.alias === alias);
 }
 
-export function watch({
-    directory,
-    execute,
-    verbosity,
-    generate,
-    deploy,
-    reinstall,
-    hotReload,
-}: Settings) {
+export async function watch(settings: Settings) {
+    const {
+        directory,
+        execute,
+        verbosity,
+        generate,
+        deploy,
+        reinstall,
+        test,
+        hotReload,
+    } = settings;
+
     const log = (level: number, ...args: any[]) => {
         if (verbosity >= level) {
             const time = new Date().toLocaleTimeString();
@@ -107,9 +111,9 @@ export function watch({
         }
     };
 
-    const updateDfxConfig = () => {
+    const updateDfxConfig = async () => {
         try {
-            const dfxConfig = loadDfxConfig(directory);
+            const dfxConfig = await loadDfxConfig(directory);
             if (!dfxConfig) {
                 console.error(
                     `${pc.bold(
@@ -177,7 +181,7 @@ export function watch({
             });
         }
     };
-    updateDfxConfig();
+    await updateDfxConfig();
 
     const runCommand = (
         command: string,
@@ -259,66 +263,86 @@ export function watch({
                 await deployPromise;
                 deployProcesses.length = 0;
 
-                deployPromise = Promise.resolve().then(async () => {
-                    // TODO: only run for relevant canisters
-                    for (const canister of canisters) {
-                        // log(0, `${pc.green('update')} ${pc.gray(canister.alias)}`);
-                        const pipe = verbosity >= 1;
-                        if (generate) {
-                            const process = runCommand('dfx', {
-                                args: ['generate', canister.alias],
-                                pipe,
-                            });
-                            const exitCode = await finishProcess(process);
-                            if (exitCode === 0) {
-                                log(
-                                    0,
-                                    pc.green(
-                                        `generate ${pc.gray(canister.alias)}`,
-                                    ),
-                                );
-                                if (hotReload) {
-                                    const outputPath = resolve(
-                                        directory,
-                                        canister.config.declarations?.output ||
-                                            `src/declarations/${canister.alias}`,
-                                    );
-                                    const jsPath = resolve(
-                                        outputPath,
-                                        'index.js',
-                                    );
-                                    if (existsSync(jsPath)) {
-                                        try {
-                                            const binding = readFileSync(
-                                                jsPath,
-                                                'utf8',
-                                            );
-                                            const newBinding = editJSBinding(
-                                                canister,
-                                                binding,
-                                            );
-                                            writeFileSync(
-                                                jsPath,
-                                                newBinding,
-                                                'utf8',
-                                            );
-                                        } catch (err) {
-                                            console.error(
-                                                'Error while generating hot reload bindings:',
-                                                err,
-                                            );
-                                        }
-                                    } else {
-                                        console.error(
-                                            'Error while generating hot reload bindings. File expected at path:',
-                                            jsPath,
-                                        );
-                                    }
-                                }
-                            }
+                deployPromise = (async () => {
+                    const pipe = verbosity >= 1;
+                    let testsPassed = true;
+                    if (test) {
+                        try {
+                            const runs = await runTests(settings);
+                            testsPassed = runs.every(
+                                (run) =>
+                                    run.status === 'passed' ||
+                                    run.status === 'skipped',
+                            );
+                        } catch (err) {
+                            testsPassed = false;
+                            console.error(
+                                'Error while running unit tests:',
+                                err.stack || err,
+                            );
                         }
+                    }
+                    if (!testsPassed) {
+                        return;
+                    }
+                    if (generate) {
+                        const generateProcess = runCommand('dfx', {
+                            // args: ['generate', canister.alias],
+                            args: ['generate'],
+                            pipe,
+                        });
+                        const exitCode = await finishProcess(generateProcess);
+                        if (exitCode === 0) {
+                            log(
+                                0,
+                                pc.green(
+                                    // `generate ${pc.gray(canister.alias)}`,
+                                    'generate',
+                                ),
+                            );
+                            // if (hotReload) {
+                            //     const outputPath = resolve(
+                            //         directory,
+                            //         canister.config.declarations?.output ||
+                            //             `src/declarations/${canister.alias}`,
+                            //     );
+                            //     const jsPath = resolve(
+                            //         outputPath,
+                            //         'index.js',
+                            //     );
+                            //     if (existsSync(jsPath)) {
+                            //         try {
+                            //             const binding = readFileSync(
+                            //                 jsPath,
+                            //                 'utf8',
+                            //             );
+                            //             const newBinding = editJSBinding(
+                            //                 canister,
+                            //                 binding,
+                            //             );
+                            //             writeFileSync(
+                            //                 jsPath,
+                            //                 newBinding,
+                            //                 'utf8',
+                            //             );
+                            //         } catch (err) {
+                            //             console.error(
+                            //                 'Error while generating hot reload bindings:',
+                            //                 err,
+                            //             );
+                            //         }
+                            //     } else {
+                            //         console.error(
+                            //             'Error while generating hot reload bindings. File expected at path:',
+                            //             jsPath,
+                            //         );
+                            //     }
+                            // }
+                        }
+                    }
+                    for (const canister of canisters) {
                         if (deploy) {
-                            const process = runCommand('dfx', {
+                            const deployProcess = runCommand('dfx', {
                                 args: [
                                     'deploy',
                                     canister.alias,
@@ -328,8 +352,8 @@ export function watch({
                                 // TODO: hide 'Module hash ... is already installed' warnings
                                 pipe: pipe || !reinstall,
                             });
-                            deployProcesses.push(process);
-                            const exitCode = await finishProcess(process);
+                            deployProcesses.push(deployProcess);
+                            const exitCode = await finishProcess(deployProcess);
                             if (exitCode === 0) {
                                 log(
                                     0,
@@ -340,7 +364,7 @@ export function watch({
                             }
                         }
                     }
-                });
+                })();
             } catch (err) {
                 throw err;
                 // console.error(err);
@@ -406,7 +430,7 @@ export function watch({
 
     const dfxWatcher = chokidar
         .watch('./dfx.json', { cwd: directory, ignored: watchIgnore })
-        .on('change', (path) => {
+        .on('change', async (path) => {
             if (!path.endsWith('dfx.json')) {
                 console.warn('Received unexpected `dfx.json` path:', path);
                 return;
@@ -414,7 +438,7 @@ export function watch({
             notifyChange();
             console.log(pc.blue(`${pc.bold('change')} ${path}`));
             const previousCanisters = canisters;
-            updateDfxConfig();
+            await updateDfxConfig();
             previousCanisters?.forEach((canister) => {
                 if (!canisters?.some((c) => c.alias === canister.alias)) {
                     removeCanister(canister);

@@ -6,7 +6,6 @@ import express from 'express';
 // import helmet from 'helmet';
 // import hpp from 'hpp';
 import morgan from 'morgan';
-import proxy from './proxy';
 import routes from './routes';
 
 export default function createApp(settings: Settings) {
@@ -29,8 +28,6 @@ export default function createApp(settings: Settings) {
     });
 
     // app.use(express.static(join(__dirname, '../public')));
-
-    // app.use(proxy);
 
     return app;
 }

@@ -1,5 +1,5 @@
 import { serve } from './server';
-import { Settings, defaultSettings } from './settings';
+import { Settings, defaultSettings, validateSettings } from './settings';
 import { watch } from './watch';
 import { loadDfxConfig } from './dfx';
 import pc from 'picocolors';
@@ -7,28 +7,14 @@ import wasm from './wasm';
 
 export { Settings, defaultSettings };
 
-export default function devServer(options: Partial<Settings> = {}) {
-    const settings: Settings = {
-        ...defaultSettings,
-        ...options,
-    };
+export default async function devServer(options: Partial<Settings> = {}) {
+    const settings = await validateSettings(options);
+
     wasm.update_settings(settings);
 
-    if (!loadDfxConfig(settings.directory)) {
-        console.error(
-            pc.yellow(
-                `Please specify a directory containing a \`dfx.json\` config file.`,
-            ),
-        );
-        console.error();
-        console.error(pc.bold(`Example:`), '$ mo-dev -c path/to/my/dfx_project');
-        console.error();
-        process.exit(1);
-    }
-
     const output = {
-        watcher: watch(settings),
-        server: settings.hotReload ? serve(settings) : null,
+        watcher: await watch(settings),
+        server: settings.hotReload ? await serve(settings) : null,
         close() {
             output.watcher.close();
             output.server?.close();
