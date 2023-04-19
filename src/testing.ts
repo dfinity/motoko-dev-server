@@ -6,7 +6,6 @@ import onCleanup from 'node-cleanup';
 import { basename, dirname, join, relative } from 'path';
 import pc from 'picocolors';
 import shellEscape from 'shell-escape';
-import which from 'which';
 import { loadDfxSources } from './dfx';
 import { validateSettings } from './settings';
 
@@ -62,9 +61,8 @@ export async function runTests(
         console.log(
             `Running ${paths.length} unit test file${
                 paths.length === 1 ? '' : 's'
-            } ${pc.dim(`(${testFilePattern})`)}`,
+            } ${pc.dim(`(${testFilePattern})`)}\n`,
         );
-        console.log();
     }
 
     const defaultStatusEmoji = '❓';
@@ -262,7 +260,7 @@ async function findDfxCacheLocation(directory: string): Promise<string> {
 async function findMocPath(settings: TestSettings): Promise<string> {
     const mocCommand = 'moc';
     return (
-        (await which(mocCommand, { nothrow: true })) ||
+        // (await which(mocCommand, { nothrow: true })) ||
         join(await findDfxCacheLocation(settings.directory), mocCommand)
     );
 }
