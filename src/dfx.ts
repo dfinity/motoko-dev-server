@@ -4,7 +4,7 @@ import execa from 'execa';
 
 export interface DfxConfig {
     dfx?: string;
-    canisters?: CanisterConfig[];
+    canisters?: Record<string, CanisterConfig>;
     defaults?: {
         build?: {
             packtool?: string;
@@ -15,6 +15,7 @@ export interface DfxConfig {
 export interface CanisterConfig {
     type?: string;
     main?: string;
+    dependencies?: string[];
 }
 
 export async function loadDfxConfig(

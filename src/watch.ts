@@ -174,11 +174,36 @@ export async function watch(settings: Settings) {
                 }
             }
         } else if (generate) {
-            spawnSync('dfx', ['canister', 'create', '--all'], {
-                cwd: directory,
-                stdio: verbosity >= 1 ? 'inherit' : 'ignore',
-                encoding: 'utf-8',
+            const runDfx = (parts: string[]) => {
+                spawnSync('dfx', parts, {
+                    cwd: directory,
+                    stdio: verbosity >= 1 ? 'inherit' : 'ignore',
+                    encoding: 'utf-8',
+                });
+            };
+
+            // Find asset canister dependencies
+            const dfxConfig = await loadDfxConfig(directory);
+            const assets: string[] = [];
+            const dependencies: string[] = [];
+            Object.entries(dfxConfig.canisters)?.forEach(([alias, config]) => {
+                if (config.type === 'assets') {
+                    assets.push(alias);
+                    config.dependencies?.forEach((dependency) => {
+                        if (
+                            !dependencies.includes(dependency) &&
+                            dfxConfig.canisters[dependency]?.type !== 'assets'
+                        ) {
+                            dependencies.push(dependency);
+                        }
+                    });
+                }
             });
+
+            log(0, pc.green('setup'));
+            runDfx(['canister', 'create', '--all']); // Create all canisters
+            dependencies.forEach((alias) => runDfx(['deploy', alias])); // Deploy asset canister dependencies
+            assets.forEach((alias) => runDfx(['deploy', alias])); // Deploy asset canisters
         }
     };
     await updateDfxConfig();
