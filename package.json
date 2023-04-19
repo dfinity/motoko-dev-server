@@ -1,6 +1,6 @@
 {
     "name": "mo-dev",
-    "version": "0.6.2",
+    "version": "0.6.3",
     "description": "A live reload development server for Motoko smart contracts.",
     "author": "DFINITY Foundation (https://dfinity.org)",
     "license": "Apache-2.0",
