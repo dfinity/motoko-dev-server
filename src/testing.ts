@@ -6,7 +6,6 @@ import onCleanup from 'node-cleanup';
 import { basename, dirname, join, relative } from 'path';
 import pc from 'picocolors';
 import shellEscape from 'shell-escape';
-import which from 'which';
 import { loadDfxSources } from './dfx';
 import { validateSettings } from './settings';
 
@@ -261,7 +260,7 @@ async function findDfxCacheLocation(directory: string): Promise<string> {
 async function findMocPath(settings: TestSettings): Promise<string> {
     const mocCommand = 'moc';
     return (
-        (await which(mocCommand, { nothrow: true })) ||
+        // (await which(mocCommand, { nothrow: true })) ||
         join(await findDfxCacheLocation(settings.directory), mocCommand)
     );
 }
