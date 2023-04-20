@@ -5,11 +5,6 @@ Thank you for your interest in contributing to this repo. As a member of the com
 All contributions to DFINITY documentation and the developer community are respected and appreciated.
 Your participation is an important factor in the success of the Internet Computer.
 
-## Contents of this repository
-
-This repository contains source code for the canister interface description language—often referred to as Candid or IDL. Candid provides a common language for specifying the signature of a canister service and interacting with canisters running on the
-Internet Computer.
-
 ## Before you contribute
 
 Before contributing, please take a few minutes to review these contributor guidelines.
@@ -66,43 +61,43 @@ If you want to submit a pull request to fix an issue or add a feature, here's a 
 
 1. Make sure you have a GitHub account, an internet connection, and access to a terminal shell or GitHub Desktop application for running commands.
 
-1. Navigate to the DFINITY public repository in a web browser.
+2. Navigate to the official repository in a web browser.
 
-1. Click **Fork** to create a copy of the repository associated with the issue you want to address under your GitHub account or organization name.
+3. Click **Fork** to create a copy of the repository associated with the issue you want to address under your GitHub account or organization name.
 
-1. Clone the repository to your local machine.
+4. Clone the repository to your local machine.
 
-1. Create a new branch for your fix by running a command similar to the following:
+5. Create a new branch for your fix by running a command similar to the following:
 
     ```bash
     git checkout -b my-branch-name-here
     ```
 
-1. Open the file you want to fix in a text editor and make the appropriate changes for the issue you are trying to address.
+6. Open the file you want to fix in a text editor and make the appropriate changes for the issue you are trying to address.
 
-1. Add the file contents of the changed files to the index `git` uses to manage the state of the project by running a command similar to the following:
+7. Add the file contents of the changed files to the index `git` uses to manage the state of the project by running a command similar to the following:
 
     ```bash
     git add path-to-changed-file
     ```
-1. Commit your changes to store the contents you added to the index along with a descriptive message by running a command similar to the following:
+8. Commit your changes to store the contents you added to the index along with a descriptive message by running a command similar to the following:
 
     ```bash
     git commit -m "Description of the fix being committed."
     ```
 
-1. Push the changes to the remote repository by running a command similar to the following:
+9. Push the changes to the remote repository by running a command similar to the following:
 
     ```bash
     git push origin my-branch-name-here
     ```
 
-1. Create a new pull request for the branch you pushed to the upstream GitHub repository.
+10. Create a new pull request for the branch you pushed to the upstream GitHub repository.
 
     Provide a title that includes a short description of the changes made.
 
-1. Wait for the pull request to be reviewed.
+11. Wait for the pull request to be reviewed.
 
-1. Make changes to the pull request, if requested.
+12. Make changes to the pull request, if requested.
 
-1. Celebrate your success after your pull request is merged!
+13. Celebrate your success after your pull request is merged!
