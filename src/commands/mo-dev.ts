@@ -28,6 +28,7 @@ const {
     test,
     yes,
     hotReload,
+    ci,
 } = program
     .name('mo-dev')
     .description(
@@ -60,6 +61,7 @@ const {
             `hot module replacement server (experimental)`,
         ).hideHelp(),
     )
+    .option('--ci', `run once and exit (for CI workflows)`)
     .addOption(
         new Option(
             '-p, --port <port>',
@@ -86,6 +88,7 @@ const settings: Settings = {
     testModes: testModes.length ? testModes : defaultSettings.testModes,
     reinstall: !!yes || defaultSettings.reinstall,
     hotReload: !!hotReload || defaultSettings.hotReload,
+    ci: !!ci || defaultSettings.ci,
 };
 
 devServer(settings).catch((err) => {
