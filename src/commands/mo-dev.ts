@@ -61,7 +61,7 @@ const {
             `hot module replacement server (experimental)`,
         ).hideHelp(),
     )
-    .option('--ci', `run once and exit (equivalent to \`CI=true\` environment variable)`)
+    .option('--ci', `run once and exit (for CI workflows)`)
     .addOption(
         new Option(
             '-p, --port <port>',

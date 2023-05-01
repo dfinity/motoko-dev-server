@@ -16,10 +16,10 @@ describe('mo-dev', () => {
         });
 
         const files: string[] = [];
-        watcher.dfxJson.on('add', (file) => {
+        watcher!.dfxJson.on('add', (file) => {
             files.push(file);
         });
-        watcher.motoko.on('add', (file) => {
+        watcher!.motoko.on('add', (file) => {
             files.push(file);
         });
 

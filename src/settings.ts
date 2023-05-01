@@ -29,7 +29,8 @@ export const defaultSettings: Settings = {
     testModes: ['interpreter'],
     reinstall: false,
     hotReload: false,
-    ci: process.env.CI && process.env.CI !== '0' && process.env.CI !== 'false',
+    // ci: process.env.CI && process.env.CI !== '0' && process.env.CI !== 'false',
+    ci: false,
 };
 
 export async function validateSettings(
