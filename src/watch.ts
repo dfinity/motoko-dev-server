@@ -304,6 +304,9 @@ export async function watch(settings: Settings) {
                         }
                     }
                     if (!testsPassed) {
+                        if (settings.ci) {
+                            process.exit(1);
+                        }
                         return;
                     }
                     if (generate) {
@@ -359,6 +362,8 @@ export async function watch(settings: Settings) {
                             //         );
                             //     }
                             // }
+                        } else if (settings.ci) {
+                            process.exit(1);
                         }
                     }
                     for (const canister of canisters) {
@@ -382,6 +387,8 @@ export async function watch(settings: Settings) {
                                         `deploy ${pc.gray(canister.alias)}`,
                                     ),
                                 );
+                            } else if (settings.ci) {
+                                process.exit(1);
                             }
                         }
                     }
@@ -447,58 +454,6 @@ export async function watch(settings: Settings) {
         }
     };
 
-    // console.log(pc.gray('Waiting for Motoko file changes...'));
-
-    const dfxWatcher = chokidar
-        .watch('./dfx.json', { cwd: directory, ignored: watchIgnore })
-        .on('change', async (path) => {
-            if (!path.endsWith('dfx.json')) {
-                console.warn('Received unexpected `dfx.json` path:', path);
-                return;
-            }
-            notifyChange();
-            console.log(pc.blue(`${pc.bold('change')} ${path}`));
-            const previousCanisters = canisters;
-            await updateDfxConfig();
-            previousCanisters?.forEach((canister) => {
-                if (!canisters?.some((c) => c.alias === canister.alias)) {
-                    removeCanister(canister);
-                }
-            });
-            canisters?.forEach((canister) => updateCanister(canister));
-        });
-
-    const moWatcher = chokidar
-        .watch(watchGlob, { cwd: directory, ignored: watchIgnore })
-        .on('all', (event, path) => {
-            if (!path.endsWith('.mo')) {
-                return;
-            }
-            log(1, pc.blue(`${pc.bold(event)} ${path}`));
-            let shouldNotify = true;
-            const resolvedPath = resolve(directory, path);
-            if (event === 'unlink') {
-                fileCache.invalidate(resolvedPath);
-            } else {
-                if (!fileCache.update(resolvedPath)) {
-                    shouldNotify = false;
-                }
-                log(2, 'cache', resolvedPath);
-            }
-            canisters?.forEach((canister) => {
-                if (resolvedPath === canister.file) {
-                    if (event === 'unlink') {
-                        removeCanister(canister);
-                    } else if (!updateCanister(canister)) {
-                        shouldNotify = false;
-                    }
-                }
-            });
-            if (shouldNotify) {
-                notifyChange();
-            }
-        });
-
     // Synchronously prepare files
     glob.sync(watchGlob, { cwd: directory, ignore: watchIgnore }).forEach(
         (path) => {
@@ -512,12 +467,70 @@ export async function watch(settings: Settings) {
         },
     );
 
-    return {
-        dfxJson: dfxWatcher,
-        motoko: moWatcher,
-        close() {
-            dfxWatcher.close();
-            moWatcher.close();
-        },
-    };
+    if (settings.ci) {
+        notifyChange();
+    } else {
+        if (verbosity >= 1) {
+            console.log(pc.gray('Waiting for Motoko file changes...'));
+        }
+
+        const dfxWatcher = chokidar
+            .watch('./dfx.json', { cwd: directory, ignored: watchIgnore })
+            .on('change', async (path) => {
+                if (!path.endsWith('dfx.json')) {
+                    console.warn('Received unexpected `dfx.json` path:', path);
+                    return;
+                }
+                notifyChange();
+                console.log(pc.blue(`${pc.bold('change')} ${path}`));
+                const previousCanisters = canisters;
+                await updateDfxConfig();
+                previousCanisters?.forEach((canister) => {
+                    if (!canisters?.some((c) => c.alias === canister.alias)) {
+                        removeCanister(canister);
+                    }
+                });
+                canisters?.forEach((canister) => updateCanister(canister));
+            });
+
+        const moWatcher = chokidar
+            .watch(watchGlob, { cwd: directory, ignored: watchIgnore })
+            .on('all', (event, path) => {
+                if (!path.endsWith('.mo')) {
+                    return;
+                }
+                log(1, pc.blue(`${pc.bold(event)} ${path}`));
+                let shouldNotify = true;
+                const resolvedPath = resolve(directory, path);
+                if (event === 'unlink') {
+                    fileCache.invalidate(resolvedPath);
+                } else {
+                    if (!fileCache.update(resolvedPath)) {
+                        shouldNotify = false;
+                    }
+                    log(2, 'cache', resolvedPath);
+                }
+                canisters?.forEach((canister) => {
+                    if (resolvedPath === canister.file) {
+                        if (event === 'unlink') {
+                            removeCanister(canister);
+                        } else if (!updateCanister(canister)) {
+                            shouldNotify = false;
+                        }
+                    }
+                });
+                if (shouldNotify) {
+                    notifyChange();
+                }
+            });
+
+        return {
+            dfxJson: dfxWatcher,
+            motoko: moWatcher,
+            close() {
+                dfxWatcher.close();
+                moWatcher.close();
+            },
+        };
+    }
 }
