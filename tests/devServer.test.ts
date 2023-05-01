@@ -13,6 +13,7 @@ describe('mo-dev', () => {
     test('detects Motoko files', async () => {
         const { watcher, close } = await devServer({
             directory: projectPath,
+            ci: false,
         });
 
         const files: string[] = [];
@@ -54,6 +55,7 @@ describe('mo-dev', () => {
         const { close } = await devServer({
             directory: projectPath,
             execute: `echo "ran command" >> generated.txt`,
+            ci: false,
         });
 
         await waitUntilLoaded();
@@ -76,6 +78,7 @@ describe('mo-dev', () => {
         const { close } = await devServer({
             directory: projectPath,
             generate: true,
+            ci: false,
         });
 
         await waitUntilLoaded();
@@ -92,6 +95,7 @@ describe('mo-dev', () => {
             directory: join(projectPath, 'vm'),
             hotReload: true,
             port,
+            ci: false,
         });
         await waitUntilLoaded();
         try {
