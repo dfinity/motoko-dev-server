@@ -28,6 +28,7 @@ const {
     test,
     yes,
     hotReload,
+    ci,
 } = program
     .name('mo-dev')
     .description(
