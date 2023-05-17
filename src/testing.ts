@@ -261,6 +261,7 @@ async function findMocPath(settings: TestSettings): Promise<string> {
     const mocCommand = 'moc';
     return (
         // (await which(mocCommand, { nothrow: true })) ||
+        process.env.MOC_BINARY ||
         join(await findDfxCacheLocation(settings.directory), mocCommand)
     );
 }
