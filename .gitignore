@@ -1,6 +1,7 @@
 node_modules/
 
 /lib
+/pkg
 
 .dfx
 .vessel
