@@ -1,7 +1,4 @@
-import axios from 'axios';
-import { existsSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
-import devServer from '../src';
 import { TestRun, runTests } from '../src/testing';
 
 const projectPath = join(__dirname, 'project');
