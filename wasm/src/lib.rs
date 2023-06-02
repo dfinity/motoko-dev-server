@@ -5,7 +5,7 @@ use motoko::{
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_wasm_bindgen::{from_value, to_value};
-use std::{borrow::Borrow, cell::RefCell};
+use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
 type Result<T = JsValue, E = JsError> = std::result::Result<T, E>;
@@ -72,7 +72,7 @@ fn motoko_to_js_value(value: &Value) -> Result {
         Value::Float(f) => JsValue::from_f64(f.0),
         Value::Char(c) => JsValue::from_str(&c.to_string()),
         Value::Text(s) => JsValue::from_str(&s.to_string()),
-        Value::Option(o) => motoko_to_js_value(o.borrow())?,
+        Value::Option(o) => motoko_to_js_value(o)?,
         _ => todo!(),
     })
 }
