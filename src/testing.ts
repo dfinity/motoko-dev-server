@@ -13,6 +13,7 @@ export interface TestSettings {
     directory: string;
     verbosity: number;
     testModes: TestMode[];
+    testFiles: string[];
 }
 
 export interface Test {
@@ -44,10 +45,18 @@ export async function runTests(
     const { directory } = settings;
 
     const testFilePattern = '*.test.mo';
-    const paths = await glob(`**/${testFilePattern}`, {
-        cwd: directory,
-        dot: false,
-        ignore: ['**/node_modules/**'],
+    const paths = (
+        await glob(`**/${testFilePattern}`, {
+            cwd: directory,
+            dot: false,
+            ignore: ['**/node_modules/**'],
+        })
+    ).filter((path) => {
+        const filename = basename(path);
+        return (
+            !settings.testFiles.length ||
+            settings.testFiles.some((f) => filename.startsWith(f))
+        );
     });
 
     const mocPath = await findMocPath(settings);
@@ -61,7 +70,13 @@ export async function runTests(
         console.log(
             `Running ${paths.length} unit test file${
                 paths.length === 1 ? '' : 's'
-            } ${pc.dim(`(${testFilePattern})`)}\n`,
+            } ${pc.dim(
+                `(${
+                    settings.testFiles.length
+                        ? settings.testFiles.map((f) => `${f}*`).join(', ')
+                        : testFilePattern
+                })`,
+            )}\n`,
         );
     }
 
