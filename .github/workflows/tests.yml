@@ -28,6 +28,8 @@ jobs:
     # - run: git clone https://github.com/dfinity/motoko.rs ../motoko.rs --depth 1
     - name: Install dfx
       run: echo y | DFX_VERSION=$DFX_VERSION bash -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+    - name: Install Mops
+      run: npm i -g ic-mops
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
