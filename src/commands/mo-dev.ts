@@ -50,7 +50,11 @@ const {
         `default test mode (interpreter, wasi)`,
         addTestMode,
     )
-    .option('-f, --testfile <file>', `only test file names starting with the given prefix`, addTestFile)
+    .option(
+        '-f, --testfile <file>',
+        `only run tests with the given file name prefix`,
+        addTestFile,
+    )
     .option(
         '-y, --yes',
         `respond "yes" to reinstall prompts (may reset canister state)`,

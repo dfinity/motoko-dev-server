@@ -41,7 +41,7 @@ const { cwd, version } = program
     )
     .option(
         '-f, --testfile <file>',
-        `only test file names starting with the given prefix`,
+        `only run tests with the given file name prefix`,
         addTestFile,
     )
     .option('-v, --verbose', `show more details in console`, increaseVerbosity)
