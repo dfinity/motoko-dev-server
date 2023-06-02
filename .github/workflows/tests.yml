@@ -30,6 +30,7 @@ jobs:
       run: echo y | DFX_VERSION=$DFX_VERSION bash -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
     - name: Install Mops
       run: npm i -g ic-mops
+    - run: dfx cache install
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
