@@ -70,7 +70,7 @@ describe('mo-test', () => {
             (result) => {
                 testRuns.push(result);
             },
-        ),
-            expect(testRuns.length).toEqual(0);
+        );
+        expect(testRuns.length).toEqual(0);
     });
 });
