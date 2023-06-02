@@ -20,6 +20,11 @@ const examples: [string, string][] = [
         '--testmode wasi --testmode interpreter',
         'Use both the interpreter and WASI runtimes by default',
     ],
+    ['-f MyTest', 'Only run tests with file names starting with `MyTest`'],
+    [
+        '-f Foo -f Bar',
+        'Only run tests with file names starting with either `Foo` or `Bar`',
+    ],
 ];
 
 const { cwd, version } = program
@@ -40,7 +45,7 @@ const { cwd, version } = program
         addTestMode,
     )
     .option(
-        '-f, --testfile <file>',
+        '-f, --testfile <prefix>',
         `only run tests with the given file name prefix`,
         addTestFile,
     )

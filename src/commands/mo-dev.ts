@@ -51,7 +51,7 @@ const {
         addTestMode,
     )
     .option(
-        '-f, --testfile <file>',
+        '-f, --testfile <prefix>',
         `only run tests with the given file name prefix`,
         addTestFile,
     )
