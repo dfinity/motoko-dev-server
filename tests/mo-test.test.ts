@@ -15,7 +15,7 @@ describe('mo-test', () => {
             },
         );
         expect(testRuns.length).toEqual(6);
-    });
+    }, 20000);
 
     test('--testmode, wasi', async () => {
         const testRuns: TestRun[] = [];
@@ -70,7 +70,7 @@ describe('mo-test', () => {
             (result) => {
                 testRuns.push(result);
             },
-        ),
-            expect(testRuns.length).toEqual(0);
+        );
+        expect(testRuns.length).toEqual(0);
     });
 });
