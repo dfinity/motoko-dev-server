@@ -8,6 +8,8 @@ const increaseVerbosity = () => verbosity++;
 
 const testModes: TestMode[] = [];
 const addTestMode = (mode: string) => testModes.push(asTestMode(mode));
+const testFiles: string[] = [];
+const addTestFile = (file: string) => testFiles.push(file);
 
 const examples: [string, string][] = [
     [
@@ -17,6 +19,11 @@ const examples: [string, string][] = [
     [
         '--testmode wasi --testmode interpreter',
         'Use both the interpreter and WASI runtimes by default',
+    ],
+    ['-f MyTest', 'Only run tests with file names starting with `MyTest`'],
+    [
+        '-f Foo -f Bar',
+        'Only run tests with file names starting with either `Foo` or `Bar`',
     ],
 ];
 
@@ -37,6 +44,11 @@ const { cwd, version } = program
         `default test mode (interpreter, wasi)`,
         addTestMode,
     )
+    .option(
+        '-f, --testfile <prefix>',
+        `only run tests with the given file name prefix`,
+        addTestFile,
+    )
     .option('-v, --verbose', `show more details in console`, increaseVerbosity)
     .parse()
     .opts();
@@ -49,6 +61,7 @@ if (version) {
 const settings = {
     directory: resolve(cwd || defaultSettings.directory),
     testModes: testModes.length ? testModes : defaultSettings.testModes,
+    testFiles: testFiles.length ? testFiles : defaultSettings.testFiles,
     verbosity,
 };
 
