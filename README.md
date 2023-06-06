@@ -61,10 +61,16 @@ Run an arbitrary command on Motoko file change (`--exec` or `-x`):
 mo-dev --exec 'npm run my-reload-script'
 ```
 
-Specify the working directory (`--cwd` or `-c`; should contain a `dfx.json` file):
+Specify the working directory (`--cwd` or `-C`; should contain a `dfx.json` file):
 
 ```sh
 mo-dev --cwd path/to/dfx_project
+```
+
+Only run the dev server for specific canisters (`--canister` or `-c`):
+
+```sh
+mo-dev -c my_canister -c another_canister --deploy
 ```
 
 ## Advanced Features
