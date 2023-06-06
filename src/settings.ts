@@ -13,6 +13,7 @@ export interface Settings {
     test: boolean;
     testModes: TestMode[];
     testFiles: string[];
+    canisterNames: string[];
     reinstall: boolean;
     hotReload: boolean;
     ci: boolean;
@@ -29,6 +30,7 @@ export const defaultSettings: Settings = {
     test: false,
     testModes: ['interpreter'],
     testFiles: [],
+    canisterNames: [],
     reinstall: false,
     hotReload: false,
     ci: process.env.CI && process.env.CI !== '0' && process.env.CI !== 'false',

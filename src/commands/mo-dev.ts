@@ -11,12 +11,15 @@ const testModes: TestMode[] = [];
 const addTestMode = (mode: string) => testModes.push(asTestMode(mode));
 const testFiles: string[] = [];
 const addTestFile = (file: string) => testFiles.push(file);
+const canisterNames: string[] = [];
+const addCanisterName = (name: string) => canisterNames.push(name);
 
 const examples: [string, string][] = [
     ['-r', 'redeploy canisters on file change'],
     ['-d', 'upgrade canisters on file change'],
     ['-g', 'generate TypeScript bindings on file change'],
     ['-t', 'run unit tests on file change'],
+    ['-r -c foo_canister -c bar_canister', 'redeploy `foo_canister` and `bar_canister` on file change'],
 ];
 
 const {
@@ -30,7 +33,6 @@ const {
     test,
     yes,
     hotReload,
-    ci,
 } = program
     .name('mo-dev')
     .description(
@@ -54,6 +56,11 @@ const {
         '-f, --testfile <prefix>',
         `only run tests with the given file name prefix`,
         addTestFile,
+    )
+    .option(
+        '-c, --canister <canister>',
+        `use the given Motoko canister`,
+        addCanisterName,
     )
     .option(
         '-y, --yes',
@@ -93,6 +100,7 @@ const settings: Settings = {
     test: !!test || defaultSettings.test,
     testModes: testModes.length ? testModes : defaultSettings.testModes,
     testFiles: testFiles.length ? testFiles : defaultSettings.testModes,
+    canisterNames: canisterNames.length ? canisterNames : defaultSettings.canisterNames,
     reinstall: !!yes || defaultSettings.reinstall,
     hotReload: !!hotReload || defaultSettings.hotReload,
     // ci: !!ci || defaultSettings.ci,
