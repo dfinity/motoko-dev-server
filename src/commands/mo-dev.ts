@@ -99,7 +99,7 @@ const settings: Settings = {
     deploy: !!deploy || defaultSettings.deploy,
     test: !!test || defaultSettings.test,
     testModes: testModes.length ? testModes : defaultSettings.testModes,
-    testFiles: testFiles.length ? testFiles : defaultSettings.testModes,
+    testFiles: testFiles.length ? testFiles : defaultSettings.testFiles,
     canisterNames: canisterNames.length ? canisterNames : defaultSettings.canisterNames,
     reinstall: !!yes || defaultSettings.reinstall,
     hotReload: !!hotReload || defaultSettings.hotReload,
