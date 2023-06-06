@@ -123,6 +123,34 @@ export async function watch(settings: Settings) {
                 return;
             }
             canisters = getDfxCanisters(directory, dfxConfig);
+            if (settings.canisterNames.length) {
+                const showExpected = settings.canisterNames.some((name) => {
+                    if (!canisters.some((c) => name === c.alias)) {
+                        log(
+                            0,
+                            'unexpected canister:',
+                            pc.yellow(pc.bold(name)),
+                        );
+                        return true;
+                    }
+                });
+                if (showExpected) {
+                    log(
+                        0,
+                        `options:`,
+                        pc.gray(
+                            canisters
+                                .map((c) => pc.bold(pc.green(c.alias)))
+                                .join(', '),
+                        ),
+                    );
+                }
+                canisters = canisters.filter((canister) =>
+                    settings.canisterNames.some(
+                        (name) => name === canister.alias,
+                    ),
+                );
+            }
         } catch (err) {
             console.error(
                 `Error while loading 'dfx.json' file:\n${err.message || err}`,
