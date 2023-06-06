@@ -15,8 +15,8 @@ const canisterNames: string[] = [];
 const addCanisterName = (name: string) => canisterNames.push(name);
 
 const examples: [string, string][] = [
-    ['-r', 'redeploy canisters on file change'],
-    ['-d', 'upgrade canisters on file change'],
+    ['-d', 'redeploy canisters on file change'],
+    ['-d -y', 'upgrade canisters on file change'],
     ['-g', 'generate TypeScript bindings on file change'],
     ['-t', 'run unit tests on file change'],
     ['-r -c foo_canister -c bar_canister', 'redeploy `foo_canister` and `bar_canister` on file change'],
