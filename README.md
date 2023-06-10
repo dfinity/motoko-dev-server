@@ -70,7 +70,7 @@ mo-dev --cwd path/to/dfx_project
 Only run the dev server for specific canisters (`--canister` or `-c`):
 
 ```sh
-mo-dev -c my_canister -c another_canister --deploy
+mo-dev --canister foo --canister bar --deploy
 ```
 
 ## Advanced Features
@@ -127,7 +127,7 @@ Configure the runtime of an individual unit test by including the following comm
 // @testmode wasi
 ```
 
-Run specific unit tests by passing a file name prefix (`-f`, `--testfile`):
+Run specific unit tests by passing a file name prefix (`-f` or `--testfile`):
 
 ```sh
 mo-test -f Foo -f Bar # (only run tests for files starting with `Foo` or `Bar`)
