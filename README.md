@@ -15,13 +15,15 @@ Get started with a full-stack [Vite + React + Motoko](https://github.com/rvanasa
 
 ## Quick Start
 
-Make sure that [Node.js](https://nodejs.org/en/) `>= 16.x` is installed on your system, and then run the following command:
+Run the following command (requires [Node.js](https://nodejs.org/en/) `>= 16.x`):
 
 ```sh
 npm i -g mo-dev
 ```
 
-View the available command-line options by passing the `--help` flag:
+> Note: standalone `mo-dev` binaries are also available as [GitHub releases](https://github.com/dfinity/motoko-dev-server/releases). 
+
+Once installed, view the available command-line options by passing the `--help` flag:
 
 ```sh
 mo-dev --help
