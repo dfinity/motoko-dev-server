@@ -15,7 +15,7 @@ Get started with a full-stack [Vite + React + Motoko](https://github.com/rvanasa
 
 ## Quick Start
 
-Make sure that [Node.js](https://nodejs.org/en/) `>= 16.x` is installed on your system, and then run the following command:
+Make sure that [Node.js](https://nodejs.org/en/) ≥ 16.x is installed on your system, and then run the following command:
 
 ```sh
 npm i -g mo-dev
