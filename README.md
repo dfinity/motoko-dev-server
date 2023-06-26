@@ -15,7 +15,7 @@ Get started with a full-stack [Vite + React + Motoko](https://github.com/rvanasa
 
 ## Quick Start
 
-Run the following command (requires [Node.js](https://nodejs.org/en/) `>= 16.x`):
+Run the following command (requires [Node.js](https://nodejs.org/en/) ≥ 16):
 
 ```sh
 npm i -g mo-dev
