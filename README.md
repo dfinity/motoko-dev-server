@@ -7,6 +7,9 @@
 
 `mo-dev` is a flexible command-line tool for speeding up your Motoko development workflow. 
 
+- [Announcement blog post](https://ryanvandersmith.medium.com/announcing-the-motoko-dev-server-live-reloading-for-web3-dapps-20363088afb4)
+- [Developer forum topic](https://forum.dfinity.org/t/announcing-mo-dev-live-reloading-for-motoko-dapps/21007)
+
 ## Try Online
 
 Get started with a full-stack [Vite + React + Motoko](https://github.com/rvanasa/vite-react-motoko#readme) project directly in your browser:
