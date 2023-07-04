@@ -73,10 +73,10 @@ export async function watch(settings: Settings) {
         hotReload,
     } = settings;
 
-    const deployArgs :string[]=[]
-    settings.deployArgs.forEach(arg=>{
-        deployArgs.push('--argument', arg)
-    })
+    const deployArgs: string[] = [];
+    settings.deployArgs.forEach((arg) => {
+        deployArgs.push('--argument', arg);
+    });
 
     const log = (level: number, ...args: any[]) => {
         if (verbosity >= level) {
