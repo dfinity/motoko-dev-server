@@ -110,7 +110,7 @@ const settings: Settings = {
     verbosity,
     generate: !!generate || defaultSettings.generate,
     deploy: !!deploy || defaultSettings.deploy,
-    deployArgs,
+    deployArgs: deployArgs.length ? deployArgs : defaultSettings.deployArgs,
     test: !!test || defaultSettings.test,
     testModes: testModes.length ? testModes : defaultSettings.testModes,
     testFiles: testFiles.length ? testFiles : defaultSettings.testFiles,
