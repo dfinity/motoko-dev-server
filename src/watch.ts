@@ -73,6 +73,11 @@ export async function watch(settings: Settings) {
         hotReload,
     } = settings;
 
+    const deployArgs :string[]=[]
+    settings.deployArgs.forEach(arg=>{
+        deployArgs.push('--argument', arg)
+    })
+
     const log = (level: number, ...args: any[]) => {
         if (verbosity >= level) {
             const time = new Date().toLocaleTimeString();
@@ -187,6 +192,7 @@ export async function watch(settings: Settings) {
                             });
                         }
                     });
+                    // TODO: handle deploy args
                     dependencies.forEach((alias) => {
                         log(0, pc.green('prepare'), pc.gray(alias));
                         runDfx(['deploy', alias], 1);
@@ -202,6 +208,7 @@ export async function watch(settings: Settings) {
                                 'deploy',
                                 canister.alias,
                                 ...(reinstall ? ['-y'] : []),
+                                ...deployArgs,
                             ],
                             1,
                         );
@@ -402,6 +409,7 @@ export async function watch(settings: Settings) {
                                     canister.alias,
                                     ...(verbosity >= 1 ? [] : ['-qq']),
                                     ...(reinstall ? ['-y'] : []),
+                                    ...deployArgs,
                                 ],
                                 // TODO: hide 'Module hash ... is already installed' warnings
                                 pipe: pipe || !reinstall,
