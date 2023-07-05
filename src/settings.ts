@@ -10,6 +10,7 @@ export interface Settings {
     verbosity: number;
     generate: boolean;
     deploy: boolean;
+    deployArgs: string[];
     test: boolean;
     testModes: TestMode[];
     testFiles: string[];
@@ -27,6 +28,7 @@ export const defaultSettings: Settings = {
     verbosity: 0,
     generate: false,
     deploy: false,
+    deployArgs: [],
     test: false,
     testModes: ['interpreter'],
     testFiles: [],

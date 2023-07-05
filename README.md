@@ -78,6 +78,12 @@ Only run the dev server for specific canisters (`--canister` or `-c`):
 mo-dev --canister foo --canister bar --deploy
 ```
 
+Pass an installation argument to `dfx deploy` (`--argument` or `-a`):
+
+```sh
+mo-dev --deploy --argument '()'
+```
+
 ## Advanced Features
 
 Show additional debug output in the console (`--verbose` or `-v`):
