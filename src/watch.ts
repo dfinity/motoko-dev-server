@@ -73,10 +73,10 @@ export async function watch(settings: Settings) {
         hotReload,
     } = settings;
 
-    const deployArgs :string[]=[]
-    settings.deployArgs.forEach(arg=>{
-        deployArgs.push('--argument', arg)
-    })
+    const deployArgs: string[] = [];
+    settings.deployArgs.forEach((arg) => {
+        deployArgs.push('--argument', arg);
+    });
 
     const log = (level: number, ...args: any[]) => {
         if (verbosity >= level) {
@@ -458,10 +458,12 @@ export async function watch(settings: Settings) {
             return true;
         } catch (err) {
             console.error(
-                pc.red(
-                    `Error while updating canister '${canister.alias}':\n${
-                        err.message || err
-                    }`,
+                pc.bold(
+                    pc.red(
+                        `Error while updating canister '${canister.alias}':\n${
+                            err.message || err
+                        }`,
+                    ),
                 ),
             );
             return false;
@@ -481,10 +483,12 @@ export async function watch(settings: Settings) {
             }
         } catch (err) {
             console.error(
-                pc.red(
-                    `Error while removing canister '${canister.alias}':\n${
-                        err.message || err
-                    }`,
+                pc.bold(
+                    pc.red(
+                        `Error while removing canister '${canister.alias}':\n${
+                            err.message || err
+                        }`,
+                    ),
                 ),
             );
         }
