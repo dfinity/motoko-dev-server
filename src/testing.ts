@@ -110,7 +110,7 @@ export async function runTests(
                         console.error(run.stdout);
                     }
                     if (run.stderr?.trim()) {
-                        console.error(pc.red(run.stderr));
+                        console.error(pc.bold(pc.red(run.stderr)));
                     }
                 }
                 const showTestMode =
