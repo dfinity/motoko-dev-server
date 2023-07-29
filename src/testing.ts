@@ -63,7 +63,7 @@ export async function runTests(
     const dfxSources = await loadDfxSources(directory);
 
     if (settings.verbosity >= 1) {
-        console.log(pc.magenta(dfxSources));
+        console.log(pc.magenta(dfxSources ?? '(no package sources)'));
     }
 
     if (settings.verbosity >= 0) {
@@ -151,10 +151,15 @@ export async function runTests(
     return runs;
 }
 
+interface SharedTestInfo {
+    mocPath: string;
+    dfxSources: string | undefined;
+}
+
 async function runTestFile(
     test: Test,
     settings: TestSettings,
-    shared: { mocPath: string; dfxSources: string },
+    shared: SharedTestInfo,
 ): Promise<TestRun[]> {
     const source = await readFile(test.path, 'utf8');
     const modes: TestMode[] = [];
@@ -178,7 +183,7 @@ async function runTest(
     test: Test,
     mode: TestMode,
     settings: TestSettings,
-    { mocPath, dfxSources }: { mocPath: string; dfxSources: string },
+    { mocPath, dfxSources }: SharedTestInfo,
 ): Promise<TestRun> {
     const { path } = test;
 
@@ -196,7 +201,9 @@ async function runTest(
     try {
         if (mode === 'interpreter') {
             const interpretResult = await execa(
-                `${shellEscape([mocPath, '-r', path])} ${dfxSources}`,
+                `${shellEscape([mocPath, '-r', path])}${
+                    dfxSources ? ` ${dfxSources}` : ''
+                }`,
                 { shell: true, cwd: settings.directory, reject: false },
             );
             return {
@@ -222,7 +229,7 @@ async function runTest(
                         '-o',
                         wasmPath,
                         path,
-                    ])} ${dfxSources}`,
+                    ])}${dfxSources ? ` ${dfxSources}` : ''}`,
                     { shell: true, cwd: settings.directory },
                 );
                 const wasmtimeResult = await execa(
