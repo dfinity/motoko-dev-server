@@ -14,7 +14,7 @@ describe('mo-test', () => {
                 testRuns.push(result);
             },
         );
-        expect(testRuns.length).toEqual(6);
+        expect(testRuns.length).toEqual(7);
     }, 20000);
 
     test('--testmode, wasi', async () => {

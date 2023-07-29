@@ -39,6 +39,7 @@ describe('mo-dev', () => {
                 'motoko_canister/test/WasiError.test.mo',
                 'motoko_canister/test/WasiFail.test.mo',
                 'motoko_canister/test/WasiPass.test.mo',
+                'vm/tests/Main.test.mo',
                 'vm/vm_canister/Main.mo',
             ]);
         } finally {
