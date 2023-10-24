@@ -234,7 +234,10 @@ async function runTest(
                 );
                 const wasmtimeResult = await execa(
                     'wasmtime',
-                    [basename(wasmPath)],
+                    [
+                        basename(wasmPath),
+                        '--wasm-features multi-memory,bulk-memory',
+                    ],
                     {
                         cwd: dirname(path),
                         reject: false,
