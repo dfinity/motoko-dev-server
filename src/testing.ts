@@ -236,7 +236,8 @@ async function runTest(
                     'wasmtime',
                     [
                         basename(wasmPath),
-                        '--wasm-features multi-memory,bulk-memory',
+                        '--wasm-features',
+                        'multi-memory,bulk-memory',
                     ],
                     {
                         cwd: dirname(path),
