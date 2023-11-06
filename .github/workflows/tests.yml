@@ -27,7 +27,7 @@ jobs:
         cache: 'npm'
     # - run: git clone https://github.com/dfinity/motoko.rs ../motoko.rs --depth 1
     - name: Install dfx
-      run: echo y | DFX_VERSION=$DFX_VERSION bash -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"
+      uses: dfinity/setup-dfx@main
     - name: Install Mops
       run: npm i -g ic-mops
     - run: dfx cache install
