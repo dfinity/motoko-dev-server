@@ -236,6 +236,7 @@ async function runTest(
                     'wasmtime',
                     [
                         basename(wasmPath),
+                        '--enable-cranelift-nan-canonicalization',
                         '--wasm-features',
                         'multi-memory,bulk-memory',
                     ],
