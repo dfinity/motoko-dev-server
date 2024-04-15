@@ -1,4 +1,3 @@
-import { serve } from './server';
 import { Settings, defaultSettings, validateSettings } from './settings';
 import wasm from './wasm';
 import { watch } from './watch';
@@ -12,10 +11,8 @@ export default async function devServer(options: Partial<Settings> = {}) {
 
     const output = {
         watcher: await watch(settings),
-        server: settings.hotReload ? await serve(settings) : null,
         close() {
             output.watcher.close();
-            output.server?.close();
         },
     };
     return output;

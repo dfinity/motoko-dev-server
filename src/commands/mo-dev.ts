@@ -82,18 +82,6 @@ const {
     .option('-g, --generate', `run \`dfx generate\` on file change`)
     .option('-x, --exec <exec>', `execute command on file change`)
     .option('-v, --verbose', `show more details in console`, increaseVerbosity)
-    .addOption(
-        new Option(
-            '--hot-reload',
-            `hot module replacement server (experimental)`,
-        ).hideHelp(),
-    )
-    .addOption(
-        new Option(
-            '--port <port>',
-            `hot module replacement server port (default: ${defaultSettings.port})`,
-        ).hideHelp(),
-    )
     .parse()
     .opts();
 
